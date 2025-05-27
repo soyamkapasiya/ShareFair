@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
@@ -21,7 +22,7 @@ public class MainActivity extends AppCompatActivity {
     private BottomNavigationView bottomNavigationView;
     private LinearLayout accountButton, premiumButton, activityButton;
     private CardView balanceCard, draftsPromoCard, expenseManagementCard;
-    private LinearLayout createNewGroup, groupAmarnath;
+    private LinearLayout createNewGroup;
     private FloatingActionButton fabAdd;
     private LinearLayout mainDashboardContent;
     private FrameLayout fragmentContainer;
@@ -67,7 +68,6 @@ public class MainActivity extends AppCompatActivity {
 
         // Fragment container (should be different from main dashboard content)
         fragmentContainer = findViewById(R.id.fragment_container);
-
     }
 
     private void setupListeners() {
@@ -85,7 +85,6 @@ public class MainActivity extends AppCompatActivity {
         balanceCard.setOnClickListener(v ->
                 Toast.makeText(MainActivity.this, "Balance details", Toast.LENGTH_SHORT).show());
 
-        // Fixed the draftsPromoCard listener
         draftsPromoCard.setOnClickListener(v ->
                 Toast.makeText(MainActivity.this, "Try Drafts feature", Toast.LENGTH_SHORT).show());
 
@@ -95,7 +94,6 @@ public class MainActivity extends AppCompatActivity {
         // Group related listeners
         createNewGroup.setOnClickListener(v ->
                 Toast.makeText(MainActivity.this, "Create new group", Toast.LENGTH_SHORT).show());
-
 
         // Bottom navigation listener
         bottomNavigationView.setOnItemSelectedListener(item -> {
@@ -124,11 +122,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void showMainContent() {
         if (fragmentContainer != null) {
-            fragmentContainer.setVisibility(android.view.View.GONE);
+            fragmentContainer.setVisibility(View.GONE);
         }
 
         if (mainDashboardContent != null) {
-            mainDashboardContent.setVisibility(android.view.View.VISIBLE);
+            mainDashboardContent.setVisibility(View.VISIBLE);
         }
 
         // Clear any existing fragments
@@ -143,8 +141,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void loadFragment(Fragment fragment) {
         // Hide main dashboard content and show fragment container
-        mainDashboardContent.setVisibility(android.view.View.GONE);
-        findViewById(R.id.fragment_container).setVisibility(android.view.View.VISIBLE);
+        if (mainDashboardContent != null) {
+            mainDashboardContent.setVisibility(View.GONE);
+        }
+
+        if (fragmentContainer != null) {
+            fragmentContainer.setVisibility(View.VISIBLE);
+        }
 
         // Load the fragment
         FragmentManager fragmentManager = getSupportFragmentManager();
@@ -156,8 +159,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public void onBackPressed() {
         FragmentManager fragmentManager = getSupportFragmentManager();
-        if (fragmentManager.getBackStackEntryCount() > 0) {
-            fragmentManager.popBackStack();
+        Fragment currentFragment = fragmentManager.findFragmentById(R.id.fragment_container);
+
+        // If there's a fragment currently displayed, go back to home
+        if (currentFragment != null) {
+            bottomNavigationView.setSelectedItemId(R.id.navigation_home);
+            showMainContent();
         } else {
             super.onBackPressed();
         }
