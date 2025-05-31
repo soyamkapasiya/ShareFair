@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+
+    <!-- Circle background as a path -->
+    <path
+        android:fillColor="#FEE2E2"
+        android:pathData="M24,0
+                          A24,24 0 1,0 24,48
+                          A24,24 0 1,0 24,0Z" />
+
+    <!-- Red bars/lines -->
+    <path
+        android:fillColor="#EF4444"
+        android:pathData="M18,14h12v4H18V14z
+                          M16,20h16v2H16V20z
+                          M16,24h16v2H16V24z
+                          M16,28h12v2H16V28z" />
+</vector>
