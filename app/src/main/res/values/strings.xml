@@ -9,4 +9,15 @@
     <string name="_5">5</string>
     <string name="activity">Activity</string>
     <string name="todo">TODO</string>
+    <string name="app_logo">App Logo</string>
+    <string name="balance">₹3005.33</string>
+    <string name="get">₹0</string>
+    <string name="will_get">will get</string>
+    <string name="pay">₹3005.33</string>
+    <string name="will_pay">will pay</string>
+    <string name="recent_groups">Recent Groups</string>
+    <string name="create_new">Create New</string>
+    <string name="submit_expense">Submit expense</string>
+    <string name="add_more_bills">+ Add more bills</string>
+    <string name="date">21 May 2025</string>
 </resources>
