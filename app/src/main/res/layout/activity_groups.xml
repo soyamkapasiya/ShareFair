@@ -4,7 +4,15 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FFFFFF">
+    android:background="#F8F9FA">
+
+    <View
+        android:layout_width="0dp"
+        android:layout_height="36dp"
+        android:background="#000000"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
         android:id="@+id/topBarLayout"
@@ -13,6 +21,7 @@
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="16dp"
+        android:layout_marginTop="36dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -137,7 +146,6 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/filterButtonsScrollView">
@@ -242,36 +250,9 @@
                     android:textSize="14sp" />
             </LinearLayout>
 
-            <Button
-                android:id="@+id/hideOlderGroupsButton"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginTop="24dp"
-                android:backgroundTint="@android:color/transparent"
-                android:minHeight="0dp"
-                android:paddingStart="24dp"
-                android:paddingTop="10dp"
-                android:paddingEnd="24dp"
-                android:paddingBottom="10dp"
-                android:text="Hide Older Groups"
-                android:textColor="#000000"
-                android:textSize="14sp"
-                app:cornerRadius="20dp" />
+
 
         </LinearLayout>
     </ScrollView>
-
-
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="?android:attr/windowBackground"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:menu="@menu/bottom_navigation_menu" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

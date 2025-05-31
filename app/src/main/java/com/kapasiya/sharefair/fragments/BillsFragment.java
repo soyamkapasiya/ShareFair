@@ -6,18 +6,23 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.fragment.app.Fragment;
 import com.kapasiya.sharefair.R;
-import android.widget.LinearLayout;
+
+import android.widget.Button;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 public class BillsFragment extends Fragment {
 
-    private LinearLayout addBillButton, splitBillButton, scanReceiptButton;
+    private Button draftButton;
+    private Button priorityButton;
+    private Button groupButton;
+    private Button allButton;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        // Set attachToRoot to false and use proper container
         View view = inflater.inflate(R.layout.activity_bills, container, false);
 
         initViews(view);
@@ -27,19 +32,57 @@ public class BillsFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        addBillButton = view.findViewById(R.id.addBillButton);
-        splitBillButton = view.findViewById(R.id.splitBillButton);
-        scanReceiptButton = view.findViewById(R.id.scanReceiptButton);
+        draftButton = view.findViewById(R.id.draftButton);
+        groupButton = view.findViewById(R.id.groupButton);
+        allButton = view.findViewById(R.id.allButton);
+        priorityButton = view.findViewById(R.id.priorityButton);
     }
 
     private void setupListeners() {
-        addBillButton.setOnClickListener(v ->
-                Toast.makeText(getContext(), "Add Bill clicked", Toast.LENGTH_SHORT).show());
+        draftButton.setOnClickListener(v -> {
+            updateButtonSelection(draftButton);
+            Toast.makeText(getContext(), "Draft clicked", Toast.LENGTH_SHORT).show();
+        });
 
-        splitBillButton.setOnClickListener(v ->
-                Toast.makeText(getContext(), "Split Bill clicked", Toast.LENGTH_SHORT).show());
+        allButton.setOnClickListener(v -> {
+            updateButtonSelection(allButton);
+            Toast.makeText(getContext(), "All clicked", Toast.LENGTH_SHORT).show();
+        });
 
-        scanReceiptButton.setOnClickListener(v ->
-                Toast.makeText(getContext(), "Scan Receipt clicked", Toast.LENGTH_SHORT).show());
+        priorityButton.setOnClickListener(v -> {
+            updateButtonSelection(priorityButton);
+            Toast.makeText(getContext(), "Priority clicked", Toast.LENGTH_SHORT).show();
+        });
+
+        groupButton.setOnClickListener(v -> {
+            updateButtonSelection(groupButton);
+            Toast.makeText(getContext(), "Group clicked", Toast.LENGTH_SHORT).show();
+        });
+    }
+
+    private void updateButtonSelection(Button selectedButton) {
+        // Reset all buttons to default state
+        resetButtonState(draftButton);
+        resetButtonState(allButton);
+        resetButtonState(priorityButton);
+        resetButtonState(groupButton);
+
+        // Set selected button state
+        setSelectedButtonState(selectedButton);
+    }
+
+    private void resetButtonState(Button button) {
+        if (button != null) {
+            button.setBackgroundTintList(getResources().getColorStateList(android.R.color.transparent));
+            button.setTextColor(getResources().getColor(android.R.color.black));
+        }
+    }
+
+    private void setSelectedButtonState(Button button) {
+        if (button != null) {
+            // You can customize these colors based on your theme
+            button.setBackgroundTintList(getResources().getColorStateList(android.R.color.holo_blue_bright));
+            button.setTextColor(getResources().getColor(android.R.color.white));
+        }
     }
 }
