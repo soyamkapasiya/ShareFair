@@ -20,4 +20,5 @@
     <string name="submit_expense">Submit expense</string>
     <string name="add_more_bills">+ Add more bills</string>
     <string name="date">21 May 2025</string>
+    <string name="client_id">abc</string>
 </resources>
