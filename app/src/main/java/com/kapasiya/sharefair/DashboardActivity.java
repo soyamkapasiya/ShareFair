@@ -29,7 +29,7 @@ import com.kapasiya.sharefair.fragments.BillsFragment;
 import com.kapasiya.sharefair.fragments.FriendsFragment;
 import com.kapasiya.sharefair.fragments.GroupsFragment;
 
-public class MainActivity extends AppCompatActivity {
+public class DashboardActivity extends AppCompatActivity {
 
     private BottomNavigationView bottomNavigationView;
     private LinearLayout accountButton;
@@ -92,24 +92,24 @@ public class MainActivity extends AppCompatActivity {
         // Top navigation listeners
         accountButton.setOnClickListener(v -> {
             // Navigate to NextActivity
-            Intent intent = new Intent(MainActivity.this, ProfileActivity.class);
+            Intent intent = new Intent(DashboardActivity.this, ProfileActivity.class);
             startActivity(intent);
-            Toast.makeText(MainActivity.this, "Account button clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(DashboardActivity.this, "Account button clicked", Toast.LENGTH_SHORT).show();
         });
 
         premiumButton.setOnClickListener(v ->
-                Toast.makeText(MainActivity.this, "Premium button clicked", Toast.LENGTH_SHORT).show());
+                Toast.makeText(DashboardActivity.this, "Premium button clicked", Toast.LENGTH_SHORT).show());
 
         activityButton.setOnClickListener(v -> {
             // Navigate to NextActivity
-            Intent intent = new Intent(MainActivity.this, NotificationActivity.class);
+            Intent intent = new Intent(DashboardActivity.this, NotificationActivity.class);
             startActivity(intent);
-            Toast.makeText(MainActivity.this, "Activity button clicked", Toast.LENGTH_SHORT).show();
+            Toast.makeText(DashboardActivity.this, "Activity button clicked", Toast.LENGTH_SHORT).show();
         });
 
         // Card view listeners
         balanceCard.setOnClickListener(v ->
-                Toast.makeText(MainActivity.this, "Balance details", Toast.LENGTH_SHORT).show());
+                Toast.makeText(DashboardActivity.this, "Balance details", Toast.LENGTH_SHORT).show());
 
         // Group related listeners
         createNewGroup.setOnClickListener(v -> showCreateGroupDialog());
@@ -136,7 +136,7 @@ public class MainActivity extends AppCompatActivity {
 
         // FAB listener
         fabAdd.setOnClickListener(v ->
-                Toast.makeText(MainActivity.this, "Add new expense/transaction", Toast.LENGTH_SHORT).show());
+                Toast.makeText(DashboardActivity.this, "Add new expense/transaction", Toast.LENGTH_SHORT).show());
     }
 
     private void showCreateGroupDialog() {
@@ -202,7 +202,7 @@ public class MainActivity extends AppCompatActivity {
             String groupName = etGroupName.getText().toString().trim();
 
             if (groupName.isEmpty()) {
-                Toast.makeText(MainActivity.this, "Please enter a group name", Toast.LENGTH_SHORT).show();
+                Toast.makeText(DashboardActivity.this, "Please enter a group name", Toast.LENGTH_SHORT).show();
                 return;
             }
 

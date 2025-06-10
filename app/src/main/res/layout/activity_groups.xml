@@ -5,13 +5,6 @@
     android:layout_height="match_parent"
     android:background="#F8F9FA">
 
-    <View
-        android:layout_width="0dp"
-        android:layout_height="36dp"
-        android:background="#000000"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
 
     <LinearLayout
         android:id="@+id/topBarLayout"
@@ -53,13 +46,15 @@
         android:id="@+id/filterButtonsScrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:scrollbars="none"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="24dp"
+        android:paddingHorizontal="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/topBarLayout">
+        app:layout_constraintTop_toBottomOf="@id/topBarLayout"
+        android:paddingStart="8dp"
+        android:paddingEnd="8dp"
+        android:scrollbars="none">
 
         <LinearLayout
             android:id="@+id/filterButtonsLayout"
@@ -133,6 +128,23 @@
                 android:paddingEnd="24dp"
                 android:paddingBottom="10dp"
                 android:text="Personal"
+                android:textColor="#000000"
+                android:textSize="14sp"
+                app:cornerRadius="20dp" />
+
+            <Button
+                android:id="@+id/etc"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="#F0F0F0"
+                android:minHeight="0dp"
+                android:paddingStart="24dp"
+                android:paddingTop="10dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="10dp"
+                android:text="ETC"
                 android:textColor="#000000"
                 android:textSize="14sp"
                 app:cornerRadius="20dp" />

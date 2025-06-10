@@ -1,13 +1,14 @@
 package com.kapasiya.sharefair;
 
-import android.app.Activity;
 import android.os.Bundle;
+import androidx.appcompat.app.AppCompatActivity;
 
-public class ProfileActivity extends Activity {
+public class SignUpActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.activity_signup);
     }
+
 }
