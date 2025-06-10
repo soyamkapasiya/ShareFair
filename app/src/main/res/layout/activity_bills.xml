@@ -6,11 +6,15 @@
     android:background="#F8F9FA"
     android:orientation="vertical">
 
-    <!-- Status Bar -->
-    <View
+
+
+    <!-- Fragment Container - FIXED: Proper LinearLayout approach -->
+    <FrameLayout
+        android:id="@+id/fragment_container"
         android:layout_width="match_parent"
-        android:layout_height="36dp"
-        android:background="#000000" />
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:visibility="gone"/>
 
     <!-- Header -->
     <LinearLayout
@@ -76,16 +80,19 @@
 
         <LinearLayout
             android:id="@+id/filterButtonsLayout"
+            style="?android:attr/buttonBarStyle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
 
             <Button
                 android:id="@+id/draftButton"
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="8dp"
+                android:backgroundTint="#6c74e2"
                 android:minHeight="0dp"
                 android:paddingStart="24dp"
                 android:paddingTop="10dp"
@@ -142,6 +149,23 @@
                 android:paddingEnd="24dp"
                 android:paddingBottom="10dp"
                 android:text="Group"
+                android:textColor="#000000"
+                android:textSize="14sp"
+                app:cornerRadius="20dp" />
+
+            <Button
+                android:id="@+id/etcButton"
+                style="?android:attr/buttonBarButtonStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:backgroundTint="#F0F0F0"
+                android:minHeight="0dp"
+                android:paddingStart="24dp"
+                android:paddingTop="10dp"
+                android:paddingEnd="24dp"
+                android:paddingBottom="10dp"
+                android:text="ETC"
                 android:textColor="#000000"
                 android:textSize="14sp"
                 app:cornerRadius="20dp" />
@@ -509,14 +533,5 @@
 
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Navigation -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigation"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#FFFFFF"
-        app:itemIconTint="@color/black"
-        app:itemTextColor="@color/black"
-        app:menu="@menu/bottom_navigation_menu" />
 
 </LinearLayout>

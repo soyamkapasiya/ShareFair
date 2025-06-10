@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "849949374093",
+    "project_id": "sharefair-6a89c",
+    "storage_bucket": "sharefair-6a89c.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:849949374093:android:eaea4e8dda6fd1c88514c4",
+        "android_client_info": {
+          "package_name": "com.kapasiya.sharefair"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5A8gZ2N5HpaWgH94udI3ZDDobxAP0uCQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

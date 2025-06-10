@@ -5,10 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#6c74e2"
-    tools:context=".MainActivity">
+    tools:context=".LoginActivity">
 
     <!-- Status Bar -->
     <View
+        android:id="@+id/statusBar"
         android:layout_width="0dp"
         android:layout_height="36dp"
         android:background="#000000"
@@ -16,21 +17,27 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <!-- Fragment Container with proper weight -->
+    <!-- Fragment Container - FIXED: Proper constraints and visibility -->
     <FrameLayout
         android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:visibility="gone" />
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="36dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
     <!-- ScrollView for Main Content -->
     <ScrollView
-        android:layout_width="match_parent"
+        android:id="@+id/mainScrollView"
+        android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="36dp"
+        app:layout_constraintTop_toBottomOf="@+id/statusBar"
         app:layout_constraintBottom_toTopOf="@+id/bottomNavigation"
-        app:layout_constraintTop_toTopOf="parent">
-
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <!-- Main Dashboard Content (Home Screen) - Initially Visible -->
         <LinearLayout
@@ -209,6 +216,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:layout_marginTop="2dp"
                             android:orientation="vertical">
 
                             <TextView
@@ -225,6 +233,7 @@
                                 android:text="@string/will_get"
                                 android:textColor="#FFFFFF"
                                 android:textSize="14sp" />
+
                         </LinearLayout>
 
                         <View
@@ -234,6 +243,7 @@
 
                         <LinearLayout
                             android:layout_width="0dp"
+                            android:layout_marginTop="2dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="24dp"
                             android:layout_weight="1"
@@ -562,20 +572,18 @@
                 </LinearLayout>
             </HorizontalScrollView>
 
-
             <!-- Content Card -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
-                android:layout_height="0dp"
+                android:layout_height="wrap_content"
                 android:layout_margin="16dp"
-                android:layout_weight="1"
                 app:cardBackgroundColor="#FFFFFF"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
+                    android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:padding="24dp">
 
