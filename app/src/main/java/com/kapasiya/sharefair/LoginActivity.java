@@ -129,6 +129,8 @@ public class LoginActivity extends AppCompatActivity {
         // Set up Sign Up text click listener
         findViewById(R.id.signUpText).setOnClickListener(view -> {
             // Navigate to sign up activity or handle sign up logic
+            Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+            startActivity(intent);
             Toast.makeText(LoginActivity.this, "Sign up functionality coming soon", Toast.LENGTH_SHORT).show();
         });
     }
