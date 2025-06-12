@@ -240,28 +240,3 @@ public class LoginActivity extends AppCompatActivity {
         finish();
     }
 }
-
-//Sign Out Button
-/*
- MaterialButton signOut = findViewById(R.id.signout);
-        signOut.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                FirebaseAuth.getInstance().addAuthStateListener(new FirebaseAuth.AuthStateListener() {
-                    @Override
-                    public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                        if (firebaseAuth.getCurrentUser() == null) {
-                            googleSignInClient.signOut().addOnSuccessListener(new OnSuccessListener<Void>() {
-                                @Override
-                                public void onSuccess(Void unused) {
-                                    Toast.makeText(MainActivity.this, "Signed out successfully", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
-                                }
-                            });
-                        }
-                    }
-                });
-                FirebaseAuth.getInstance().signOut();
-            }
-        });
-*/

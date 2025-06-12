@@ -8,14 +8,6 @@
     android:background="#F8F9FA"
     tools:context=".ProfileActivity">
 
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="36dp"
-        android:background="#000000"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
-
 
     <ScrollView
         android:layout_width="match_parent"
@@ -82,6 +74,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:background="@drawable/circle_background"
+                        android:contentDescription="TODO"
                         android:scaleType="centerCrop"
                         android:src="@drawable/ic_person" />
 

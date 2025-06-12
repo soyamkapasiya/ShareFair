@@ -9,14 +9,13 @@
     <!-- Content Layout -->
     <LinearLayout
         android:id="@+id/contentLayout"
-        android:layout_below="@id/statusBar"
-        android:layout_above="@id/bottomNavigation"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical">
 
         <!-- Header -->
         <LinearLayout
+            android:layout_marginTop="36dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="center_vertical"

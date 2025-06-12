@@ -1,12 +1,15 @@
 package com.kapasiya.sharefair;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+
+import com.bumptech.glide.Glide;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -15,10 +18,11 @@ public class ProfileActivity extends AppCompatActivity {
     // UI Components
     private ImageView btnBack;
     private ImageView btnEditProfile;
+
+    private ImageView profile;
     private TextView tvUserName;
     private TextView tvPhoneNumber;
     private TextView tvEmail;
-    private TextView tvCurrencySymbol;
 
     // Menu options
     private LinearLayout layoutDefaultCurrency;
@@ -59,7 +63,6 @@ public class ProfileActivity extends AppCompatActivity {
         tvUserName = findViewById(R.id.tv_user_name);
         tvPhoneNumber = findViewById(R.id.tv_phone_number);
         tvEmail = findViewById(R.id.tv_email);
-        tvCurrencySymbol = findViewById(R.id.tv_currency_symbol);
 
         // Menu options
         layoutDefaultCurrency = findViewById(R.id.layout_default_currency);
@@ -69,6 +72,7 @@ public class ProfileActivity extends AppCompatActivity {
         layoutFaqs = findViewById(R.id.layout_faqs);
         layoutSettings = findViewById(R.id.layout_settings);
         layoutLogout = findViewById(R.id.layout_logout);
+        profile = findViewById(R.id.iv_profile_picture);
     }
 
     private void setupClickListeners() {
@@ -77,47 +81,39 @@ public class ProfileActivity extends AppCompatActivity {
 
         // Edit profile button
         btnEditProfile.setOnClickListener(v -> {
-            // Navigate to edit profile activity
             Toast.makeText(ProfileActivity.this, "Edit profile coming soon", Toast.LENGTH_SHORT).show();
         });
 
         // Default currency
         layoutDefaultCurrency.setOnClickListener(v -> {
-            // Navigate to currency selection
             Toast.makeText(ProfileActivity.this, "Currency selection coming soon", Toast.LENGTH_SHORT).show();
         });
 
         // Contact us
         layoutContactUs.setOnClickListener(v -> {
-            // Navigate to contact us
             Toast.makeText(ProfileActivity.this, "Contact us coming soon", Toast.LENGTH_SHORT).show();
         });
 
         // Invite friends
         layoutInviteFriends.setOnClickListener(v -> {
-            // Navigate to invite friends
             Toast.makeText(ProfileActivity.this, "Invite friends coming soon", Toast.LENGTH_SHORT).show();
         });
 
         // Rate us
         layoutRateUs.setOnClickListener(v -> {
-            // Navigate to play store for rating
             Toast.makeText(ProfileActivity.this, "Rate us coming soon", Toast.LENGTH_SHORT).show();
         });
 
         // FAQs
         layoutFaqs.setOnClickListener(v -> {
-            // Navigate to FAQs
             Toast.makeText(ProfileActivity.this, "FAQs coming soon", Toast.LENGTH_SHORT).show();
         });
 
         // Settings
         layoutSettings.setOnClickListener(v -> {
-            // Navigate to settings
             Toast.makeText(ProfileActivity.this, "Settings coming soon", Toast.LENGTH_SHORT).show();
         });
 
-        // Logout button
         layoutLogout.setOnClickListener(v -> signOut());
     }
 
@@ -147,14 +143,33 @@ public class ProfileActivity extends AppCompatActivity {
             } else {
                 tvPhoneNumber.setText("No phone number");
             }
+
+            Uri photoUrl = currentUser.getPhotoUrl();
+            if (photoUrl != null) {
+                // Load the image into ImageView
+                loadProfileImage(photoUrl.toString());
+            } else {
+                // No profile picture available, show default image
+                profile.setImageResource(R.drawable.circle_background);
+            }
+
         }
     }
 
+    private void loadProfileImage(String photoUrl) {
+        ImageView profileImageView = findViewById(R.id.iv_profile_picture);
+
+        Glide.with(this)
+                .load(photoUrl)
+                .placeholder(R.drawable.circle_background) // Show while loading
+                .error(R.drawable.circle_background) // Show if loading fails
+                .circleCrop() // Makes image circular
+                .into(profileImageView);
+    }
+
     private void signOut() {
-        // Show confirmation or directly sign out
         auth.signOut();
 
-        // Navigate to login activity
         Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
@@ -166,9 +181,7 @@ public class ProfileActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        // Check if user is still authenticated
         if (auth.getCurrentUser() == null) {
-            // User is not authenticated, redirect to login
             Intent intent = new Intent(ProfileActivity.this, LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
