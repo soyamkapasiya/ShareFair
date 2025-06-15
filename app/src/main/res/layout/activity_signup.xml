@@ -8,6 +8,7 @@
     android:fillViewport="true"
     tools:context=".SignUpActivity">
 
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -115,7 +116,7 @@
                     app:startIconTint="#6B7280">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/fullNameEditText"
+                        android:id="@+id/fullNameSignUp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Full Name"
@@ -141,7 +142,7 @@
                     app:startIconTint="#6B7280">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/emailEditText"
+                        android:id="@+id/emailSignUp"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Email Address"
@@ -151,7 +152,7 @@
 
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Phone Number Input -->
+                <!-- Password Input -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -163,14 +164,40 @@
                     app:boxCornerRadiusTopStart="12dp"
                     app:boxStrokeColor="@color/input_stroke_color"
                     app:hintTextColor="#6B7280"
-                    app:startIconDrawable="@drawable/ic_phone"
+                    app:startIconDrawable="@drawable/ic_password"
                     app:startIconTint="#6B7280">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/phoneEditText"
+                        android:id="@+id/passwordSignup"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Phone Number"
+                        android:hint="Password"
+                        android:inputType="phone"
+                        android:textColor="#1F2937"
+                        android:textSize="16sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Confirm Password Input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:boxBackgroundMode="outline"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxStrokeColor="@color/input_stroke_color"
+                    app:hintTextColor="#6B7280"
+                    app:startIconDrawable="@drawable/ic_password"
+                    app:startIconTint="#6B7280">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/cPasswordSignup"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Confirm Password"
                         android:inputType="phone"
                         android:textColor="#1F2937"
                         android:textSize="16sp" />

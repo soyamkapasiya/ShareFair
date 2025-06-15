@@ -20,7 +20,7 @@
             android:name=".LoginActivity"
             android:exported="true" />
 
-        <activity android:name=".OTPVerificationActivity"/>
+        <activity android:name=".EmailVerificationActivity"/>
         <activity android:name=".SignUpActivity"/>
         <activity android:name=".DashboardActivity"/>
         <activity android:name=".ProfileActivity"/>
