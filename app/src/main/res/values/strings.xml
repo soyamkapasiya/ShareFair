@@ -1,6 +1,5 @@
 <resources>
     <string name="app_name">ShareFair</string>
-    <string name="total_balance">Total Balance</string>
     <string name="_3005_33">₹3005.33</string>
     <string name="fetch_expenses_from_sms_nadd_them_with_just_2_taps">Fetch expenses from SMS\nAdd them with just 2 taps!</string>
     <string name="to_ensure_you_never_miss_an_expense">to ensure you never miss an expense</string>
@@ -10,16 +9,49 @@
     <string name="activity">Activity</string>
     <string name="todo">TODO</string>
     <string name="app_logo">App Logo</string>
-    <string name="balance">₹3005.33</string>
-    <string name="get">₹0</string>
-    <string name="will_get">will get</string>
-    <string name="pay">₹3005.33</string>
-    <string name="will_pay">will pay</string>
     <string name="recent_groups">Recent Groups</string>
     <string name="create_new">Create New</string>
     <string name="submit_expense">Submit expense</string>
     <string name="add_more_bills">+ Add more bills</string>
     <string name="date">21 May 2025</string>
+    <!-- Balance Card Strings -->
+    <string name="total_balance">Total Balance</string>
+    <string name="balance">₹25,430.50</string>
+
+    <!-- Stats Section -->
+    <string name="get">₹12,540</string>
+    <string name="will_get">You\'ll Get</string>
+    <string name="pay">₹8,320</string>
+    <string name="will_pay">You\'ll Pay</string>
+
+    <!-- Action Buttons -->
+    <string name="add_money">Add Money</string>
+    <string name="send_money">Send Money</string>
+
+    <!-- Alternative Currency Formats -->
+    <string name="balance_usd">$1,250.75</string>
+    <string name="get_usd">$525.40</string>
+    <string name="pay_usd">$320.85</string>
+
+    <!-- Accessibility Strings -->
+    <string name="balance_visibility_toggle">Toggle balance visibility</string>
+    <string name="positive_amount_indicator">Positive amount indicator</string>
+    <string name="negative_amount_indicator">Negative amount indicator</string>
+
+    <!-- Content Descriptions -->
+    <string name="total_balance_description">Your current total balance</string>
+    <string name="amount_to_receive_description">Total amount you will receive</string>
+    <string name="amount_to_pay_description">Total amount you need to pay</string>
+
+    <!-- Placeholder/Loading States -->
+    <string name="balance_loading">Loading...</string>
+    <string name="balance_hidden">****</string>
+    <string name="amount_unavailable">N/A</string>
+
+    <!-- Status Messages -->
+    <string name="balance_updated">Balance updated successfully</string>
+    <string name="balance_error">Unable to load balance</string>
+    <string name="client_id">849949374093-pp7hrfek2u224h0ntcpmh0dl9sv1klrh.apps.googleusercontent.com</string>
     <string name="other">Other</string>
     <string name="personal">Personal</string>
 </resources>

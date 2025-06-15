@@ -6,6 +6,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/login_gradient_background"
     android:fillViewport="true"
+    android:fitsSystemWindows="true"
     tools:context=".LoginActivity">
 
     <LinearLayout
@@ -13,21 +14,6 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:padding="24dp">
-
-        <!-- Status Bar -->
-        <View
-            android:id="@+id/statusBar"
-            android:layout_width="0dp"
-            android:layout_height="36dp"
-            android:background="#000000"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <!-- Top Spacer -->
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="80dp" />
 
         <!-- Logo Section -->
         <LinearLayout
@@ -110,15 +96,40 @@
                     app:boxCornerRadiusTopStart="12dp"
                     app:boxStrokeColor="@color/input_stroke_color"
                     app:hintTextColor="#6B7280"
-                    app:startIconDrawable="@drawable/ic_phone"
+                    app:startIconDrawable="@drawable/ic_email"
                     app:startIconTint="#6B7280">
 
                     <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/phoneEditText"
+                        android:id="@+id/emailLogin"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Phone Number"
-                        android:inputType="phone"
+                        android:hint="Email"
+                        android:inputType="textEmailAddress"
+                        android:textColor="#1F2937"
+                        android:textSize="16sp" />
+
+                </com.google.android.material.textfield.TextInputLayout>
+                <!-- Phone Number Input -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:boxBackgroundMode="outline"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp"
+                    app:boxStrokeColor="@color/input_stroke_color"
+                    app:hintTextColor="#6B7280"
+                    app:startIconDrawable="@drawable/ic_password"
+                    app:startIconTint="#6B7280">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/passwordLogin"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="Password"
+                        android:inputType="textPassword"
                         android:textColor="#1F2937"
                         android:textSize="16sp" />
 
@@ -128,11 +139,11 @@
 
                 <!-- OR Divider -->
                 <com.google.android.material.button.MaterialButton
-                    android:id="@+id/sendOtpButton"
+                    android:id="@+id/loginButton"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:layout_marginBottom="24dp"
-                    android:text="Send OTP"
+                    android:text="Login"
                     android:textColor="#FFFFFF"
                     android:textSize="16sp"
                     android:textStyle="bold"

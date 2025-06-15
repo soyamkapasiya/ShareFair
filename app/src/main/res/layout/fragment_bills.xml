@@ -202,7 +202,7 @@
 
             <!-- Bills RecyclerView -->
             <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_view_notifications"
+                android:id="@+id/recycler_view_bills"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipToPadding="false"

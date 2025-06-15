@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<shape xmlns:android="http://schemas.android.com/apk/res/android"
+    android:shape="oval">
+
+    <!-- Light background with subtle primary color -->
+    <solid android:color="#EBF4FF" />
+
+    <!-- Optional: Gradient effect for more visual appeal -->
+    <gradient
+        android:angle="135"
+        android:startColor="#EBF4FF"
+        android:endColor="#DBEAFE"
+        android:type="linear" />
+
+</shape>

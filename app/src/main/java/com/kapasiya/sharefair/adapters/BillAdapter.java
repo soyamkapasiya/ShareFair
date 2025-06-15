@@ -42,7 +42,7 @@ public class BillAdapter extends RecyclerView.Adapter<BillAdapter.BillViewHolder
 
     @Override
     public int getItemCount() {
-        return billItems != null ? billItems.size() : 0; // Fixed: return actual list size
+        return billItems != null ? billItems.size() : 0;
     }
 
     static class BillViewHolder extends RecyclerView.ViewHolder {

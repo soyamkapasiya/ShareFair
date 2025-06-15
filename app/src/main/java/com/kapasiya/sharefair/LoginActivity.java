@@ -5,10 +5,12 @@ import static android.content.ContentValues.TAG;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
+import android.util.Patterns;
+import android.view.View;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.credentials.CredentialManager;
 import androidx.credentials.CredentialManagerCallback;
@@ -21,67 +23,27 @@ import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.textfield.TextInputEditText;
+import com.google.android.material.textfield.TextInputLayout;
 import com.google.firebase.FirebaseApp;
-import com.google.firebase.FirebaseException;
 import com.google.firebase.auth.AuthCredential;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthInvalidCredentialsException;
+import com.google.firebase.auth.FirebaseAuthInvalidUserException;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
-import com.google.firebase.auth.PhoneAuthCredential;
-import com.google.firebase.auth.PhoneAuthOptions;
-import com.google.firebase.auth.PhoneAuthProvider;
-
-import java.util.Objects;
-import java.util.concurrent.TimeUnit;
 
 
 public class LoginActivity extends AppCompatActivity {
 
     private FirebaseAuth auth;
     private CredentialManager credentialManager;
-    private TextInputEditText phoneEditText;
+    private TextInputEditText emailLoginText;
+    private TextInputEditText passwordLoginText;
+    private TextInputLayout emailInputLayout;
+    private TextInputLayout passwordInputLayout;
+    private MaterialButton loginButton;
+    private MaterialButton googleLoginButton;
 
-    private String verificationId;
-    private PhoneAuthProvider.ForceResendingToken resendToken;
-
-    private final PhoneAuthProvider.OnVerificationStateChangedCallbacks callbacks = new PhoneAuthProvider.OnVerificationStateChangedCallbacks() {
-        @Override
-        public void onVerificationCompleted(@NonNull PhoneAuthCredential credential) {
-            // This callback is invoked in two situations:
-            // 1 - Instant verification. In some cases the phone number can be instantly
-            //     verified without needing to send or enter a verification code.
-            // 2 - Auto-retrieval. On some devices Google Play services can automatically
-            //     detect the incoming verification SMS and perform verification without
-            //     user action.
-            Log.d(TAG, "onVerificationCompleted:" + credential);
-            signInWithPhoneAuthCredential(credential);
-        }
-
-        @Override
-        public void onVerificationFailed(@NonNull FirebaseException e) {
-            Log.w(TAG, "onVerificationFailed", e);
-            Toast.makeText(LoginActivity.this, "Verification failed: " + e.getMessage(), Toast.LENGTH_LONG).show();
-        }
-
-        @Override
-        public void onCodeSent(@NonNull String verificationId, @NonNull PhoneAuthProvider.ForceResendingToken token) {
-            // The SMS verification code has been sent to the provided phone number, we
-            // now need to ask the user to enter the code and then construct a credential
-            // by combining the code with a verification ID.
-            Log.d(TAG, "onCodeSent:" + verificationId);
-
-            // Save verification ID and resending token so we can use them later
-            LoginActivity.this.verificationId = verificationId;
-            LoginActivity.this.resendToken = token;
-
-            Toast.makeText(LoginActivity.this, "OTP sent to your phone", Toast.LENGTH_SHORT).show();
-
-            // Navigate to OTP verification activity
-            Intent intent = new Intent(LoginActivity.this, OTPVerificationActivity.class);
-            intent.putExtra("verificationId", verificationId);
-            intent.putExtra("phoneNumber", Objects.requireNonNull(phoneEditText.getText()).toString().trim());
-            startActivity(intent);
-        }
-    };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -103,39 +65,159 @@ public class LoginActivity extends AppCompatActivity {
         credentialManager = CredentialManager.create(this);
 
         // Initialize views
-        MaterialButton googleLoginButton = findViewById(R.id.googleLoginButton);
-        MaterialButton sendOtpButton = findViewById(R.id.sendOtpButton);
-        phoneEditText = findViewById(R.id.phoneEditText);
+        googleLoginButton = findViewById(R.id.googleLoginButton);
+        loginButton = findViewById(R.id.loginButton);
+        emailLoginText = findViewById(R.id.emailLogin);
+        passwordLoginText = findViewById(R.id.passwordLogin);
 
-        // Set up Google Login button with Credential Manager
+        // Get TextInputLayout references for error handling
+        emailInputLayout = (TextInputLayout) emailLoginText.getParent().getParent();
+        passwordInputLayout = (TextInputLayout) passwordLoginText.getParent().getParent();
+
         googleLoginButton.setOnClickListener(view -> signInWithGoogle());
 
-        // Set up Send OTP button
-        sendOtpButton.setOnClickListener(view -> {
-            String phoneNumber = Objects.requireNonNull(phoneEditText.getText()).toString().trim();
-            if (phoneNumber.isEmpty()) {
-                Toast.makeText(LoginActivity.this, "Please enter phone number", Toast.LENGTH_SHORT).show();
-                return;
-            }
-
-            // Add country code if not present
-            if (!phoneNumber.startsWith("+")) {
-                phoneNumber = "+91" + phoneNumber; // Assuming Indian numbers, change as needed
-            }
-
-            sendVerificationCode(phoneNumber);
-        });
+        // Set up Login button
+        loginButton.setOnClickListener(view -> loginWithEmailAndPassword());
 
         // Set up Sign Up text click listener
         findViewById(R.id.signUpText).setOnClickListener(view -> {
-            // Navigate to sign up activity or handle sign up logic
+            // Navigate to sign up activity
             Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
             startActivity(intent);
-            Toast.makeText(LoginActivity.this, "Sign up functionality coming soon", Toast.LENGTH_SHORT).show();
         });
     }
 
+    private void loginWithEmailAndPassword() {
+        String email = emailLoginText.getText().toString().trim();
+        String password = passwordLoginText.getText().toString().trim();
+
+        // Clear previous errors
+        emailInputLayout.setError(null);
+        passwordInputLayout.setError(null);
+
+        // Validate input
+        if (!validateInput(email, password)) {
+            return;
+        }
+
+        // Show loading state
+        setLoadingState(true);
+
+        // Sign in with Firebase Auth
+        auth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    setLoadingState(false);
+
+                    if (task.isSuccessful()) {
+                        // Sign in success
+                        Log.d(TAG, "signInWithEmail:success");
+                        FirebaseUser user = auth.getCurrentUser();
+
+                        if (user != null) {
+                            // Check if email is verified
+                            if (user.isEmailVerified()) {
+                                Toast.makeText(LoginActivity.this, "Login successful!", Toast.LENGTH_SHORT).show();
+                                navigateToMainActivity();
+                            } else {
+                                // Email not verified, show verification dialog
+                                showEmailVerificationDialog(user);
+                            }
+                        }
+                    } else {
+                        // Sign in failed
+                        Log.w(TAG, "signInWithEmail:failure", task.getException());
+                        handleLoginError(task.getException());
+                    }
+                });
+    }
+
+    private boolean validateInput(String email, String password) {
+        boolean isValid = true;
+
+        // Validate email
+        if (TextUtils.isEmpty(email)) {
+            emailInputLayout.setError("Email is required");
+            isValid = false;
+        } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            emailInputLayout.setError("Please enter a valid email address");
+            isValid = false;
+        }
+
+        // Validate password
+        if (TextUtils.isEmpty(password)) {
+            passwordInputLayout.setError("Password is required");
+            isValid = false;
+        } else if (password.length() < 6) {
+            passwordInputLayout.setError("Password must be at least 6 characters");
+            isValid = false;
+        }
+
+        return isValid;
+    }
+
+    private void handleLoginError(Exception exception) {
+        String errorMessage = "Login failed. Please try again.";
+
+        if (exception instanceof FirebaseAuthInvalidUserException) {
+            String errorCode = ((FirebaseAuthInvalidUserException) exception).getErrorCode();
+            if (errorCode.equals("ERROR_USER_NOT_FOUND")) {
+                emailInputLayout.setError("No account found with this email");
+                errorMessage = "Account not found. Please check your email or sign up.";
+            } else if (errorCode.equals("ERROR_USER_DISABLED")) {
+                errorMessage = "This account has been disabled. Please contact support.";
+            }
+        } else if (exception instanceof FirebaseAuthInvalidCredentialsException) {
+            String errorCode = ((FirebaseAuthInvalidCredentialsException) exception).getErrorCode();
+            if (errorCode.equals("ERROR_INVALID_EMAIL")) {
+                emailInputLayout.setError("Invalid email format");
+            } else if (errorCode.equals("ERROR_WRONG_PASSWORD")) {
+                passwordInputLayout.setError("Incorrect password");
+                errorMessage = "Incorrect password. Please try again.";
+            }
+        }
+
+        Toast.makeText(this, errorMessage, Toast.LENGTH_LONG).show();
+    }
+
+    private void showEmailVerificationDialog(FirebaseUser user) {
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Email Verification Required")
+                .setMessage("Please verify your email address to continue. Check your email for a verification link.")
+                .setPositiveButton("Resend Email", (dialog, which) -> {
+                    user.sendEmailVerification()
+                            .addOnCompleteListener(task -> {
+                                if (task.isSuccessful()) {
+                                    Toast.makeText(LoginActivity.this,
+                                            "Verification email sent!", Toast.LENGTH_SHORT).show();
+                                } else {
+                                    Toast.makeText(LoginActivity.this,
+                                            "Failed to send verification email", Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                })
+                .setNegativeButton("Cancel", (dialog, which) -> {
+                    // Sign out the user since email is not verified
+                    auth.signOut();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    private void setLoadingState(boolean isLoading) {
+        loginButton.setEnabled(!isLoading);
+        googleLoginButton.setEnabled(!isLoading);
+
+        if (isLoading) {
+            loginButton.setText("Signing in...");
+        } else {
+            loginButton.setText("Login");
+        }
+    }
+
     private void signInWithGoogle() {
+        // Show loading state
+        setLoadingState(true);
+
         // Create GetGoogleIdOption (replacement for GoogleSignInOptions)
         GetGoogleIdOption googleIdOption = new GetGoogleIdOption.Builder()
                 .setFilterByAuthorizedAccounts(false)
@@ -163,74 +245,58 @@ public class LoginActivity extends AppCompatActivity {
 
                         @Override
                         public void onError(GetCredentialException e) {
+                            setLoadingState(false);
                             Log.w(TAG, "Google Sign-In failed", e);
                             Toast.makeText(LoginActivity.this, "Google Sign-In failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         }
                     }
             );
+        } else {
+            setLoadingState(false);
+            Toast.makeText(this, "Google Sign-In requires Android API level 28 or higher", Toast.LENGTH_SHORT).show();
         }
     }
 
     private void handleGoogleSignInResult(GetCredentialResponse result) {
-        GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential
-                .createFrom(result.getCredential().getData());
+        try {
+            GoogleIdTokenCredential googleIdTokenCredential = GoogleIdTokenCredential
+                    .createFrom(result.getCredential().getData());
 
-        String idToken = googleIdTokenCredential.getIdToken();
+            String idToken = googleIdTokenCredential.getIdToken();
 
-        // Create Firebase credential
-        AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(idToken, null);
+            // Create Firebase credential
+            AuthCredential firebaseCredential = GoogleAuthProvider.getCredential(idToken, null);
 
-        // Sign in to Firebase
-        auth.signInWithCredential(firebaseCredential)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        Log.d(TAG, "signInWithCredential:success");
+            // Sign in to Firebase
+            auth.signInWithCredential(firebaseCredential)
+                    .addOnCompleteListener(this, task -> {
+                        setLoadingState(false);
 
-                        // Load user profile image
-                        if (auth.getCurrentUser() != null && auth.getCurrentUser().getPhotoUrl() != null) {
-                            Glide.with(LoginActivity.this).load(auth.getCurrentUser().getPhotoUrl());
+                        if (task.isSuccessful()) {
+                            Log.d(TAG, "signInWithCredential:success");
+
+                            // Load user profile image
+                            if (auth.getCurrentUser() != null && auth.getCurrentUser().getPhotoUrl() != null) {
+                                Glide.with(LoginActivity.this).load(auth.getCurrentUser().getPhotoUrl());
+                            }
+
+                            Log.d(TAG, "Name: " + (auth.getCurrentUser() != null ? auth.getCurrentUser().getDisplayName() : "null"));
+                            Log.d(TAG, "Email: " + (auth.getCurrentUser() != null ? auth.getCurrentUser().getEmail() : "null"));
+
+                            Toast.makeText(LoginActivity.this, "Signed in successfully!", Toast.LENGTH_SHORT).show();
+                            navigateToMainActivity();
+                        } else {
+                            Log.w(TAG, "signInWithCredential:failure", task.getException());
+                            Toast.makeText(LoginActivity.this, "Authentication failed: " +
+                                            (task.getException() != null ? task.getException().getMessage() : "Unknown error"),
+                                    Toast.LENGTH_SHORT).show();
                         }
-
-                        Log.w(TAG, "Name: " + (auth.getCurrentUser() != null ? auth.getCurrentUser().getDisplayName() : "null"));
-                        Log.w(TAG, "Mail: " + (auth.getCurrentUser() != null ? auth.getCurrentUser().getEmail() : "null"));
-
-                        Toast.makeText(LoginActivity.this, "Signed in successfully!", Toast.LENGTH_SHORT).show();
-                        navigateToMainActivity();
-                    } else {
-                        Log.w(TAG, "signInWithCredential:failure", task.getException());
-                        Toast.makeText(LoginActivity.this, "Authentication failed: " +
-                                        (task.getException() != null ? task.getException().getMessage() : "Unknown error"),
-                                Toast.LENGTH_SHORT).show();
-                    }
-                });
-    }
-
-    private void sendVerificationCode(String phoneNumber) {
-        PhoneAuthOptions options = PhoneAuthOptions.newBuilder(auth)
-                .setPhoneNumber(phoneNumber)
-                .setTimeout(60L, TimeUnit.SECONDS)
-                .setActivity(this)
-                .setCallbacks(callbacks)
-                .build();
-        PhoneAuthProvider.verifyPhoneNumber(options);
-    }
-
-    private void signInWithPhoneAuthCredential(PhoneAuthCredential credential) {
-        auth.signInWithCredential(credential)
-                .addOnCompleteListener(this, task -> {
-                    if (task.isSuccessful()) {
-                        // Sign in success, update UI with the signed-in user's information
-                        Log.d(TAG, "signInWithCredential:success");
-                        Toast.makeText(LoginActivity.this, "Phone authentication successful!", Toast.LENGTH_SHORT).show();
-                        navigateToMainActivity();
-                    } else {
-                        // Sign in failed, display a message and update the UI
-                        Log.w(TAG, "signInWithCredential:failure", task.getException());
-                        Toast.makeText(LoginActivity.this, "Phone authentication failed: " +
-                                        (task.getException() != null ? task.getException().getMessage() : "Unknown error"),
-                                Toast.LENGTH_LONG).show();
-                    }
-                });
+                    });
+        } catch (Exception e) {
+            setLoadingState(false);
+            Log.e(TAG, "Error handling Google Sign-In result", e);
+            Toast.makeText(this, "Error processing Google Sign-In", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void navigateToMainActivity() {

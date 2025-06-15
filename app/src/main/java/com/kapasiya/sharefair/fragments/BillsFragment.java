@@ -31,13 +31,11 @@ public class BillsFragment extends Fragment {
     private RecyclerView recyclerView;
     private BillAdapter adapter;
     private List<BillItems> billList;
-    private String filterType;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Use fragment_bills.xml instead of activity_bills.xml
-        View view = inflater.inflate(R.layout.activity_bills, container, false);
+        View view = inflater.inflate(R.layout.fragment_bills, container, false);
 
         initViews(view);
         setupRecyclerView();
@@ -48,7 +46,7 @@ public class BillsFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        recyclerView = view.findViewById(R.id.recycler_view_notifications);
+        recyclerView = view.findViewById(R.id.recycler_view_bills);
         groupButton = view.findViewById(R.id.groupButton);
         allButton = view.findViewById(R.id.allButton);
         priorityButton = view.findViewById(R.id.priorityButton);
@@ -59,7 +57,6 @@ public class BillsFragment extends Fragment {
 
     private void setupRecyclerView() {
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        // Initialize empty list first
         billList = new ArrayList<>();
         adapter = new BillAdapter(billList);
         recyclerView.setAdapter(adapter);
@@ -133,7 +130,6 @@ public class BillsFragment extends Fragment {
     }
 
     private void filterBills(String filterType) {
-        this.filterType = filterType;
         // For now, show all bills regardless of filter
         // You can implement actual filtering logic here based on your requirements
         initBillData();

@@ -13,6 +13,7 @@ import android.view.Window;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -40,8 +41,7 @@ public class DashboardActivity extends AppCompatActivity {
     private CardView expenseManagementCard;
     private LinearLayout createNewGroup;
     private FloatingActionButton fabAdd;
-    private View mainScrollView;
-    private FrameLayout fragmentContainer;
+    private ScrollView mainScrollView;
     private Dialog createGroupDialog;
     private String selectedGroupType = "Home";
 
@@ -62,6 +62,7 @@ public class DashboardActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        FrameLayout fragmentContainer;
         accountButton = findViewById(R.id.accountButton);
         premiumButton = findViewById(R.id.premiumButton);
         activityButton = findViewById(R.id.activityButton);
@@ -226,7 +227,6 @@ public class DashboardActivity extends AppCompatActivity {
                     break;
                 default:
                     groupHome.setBackgroundResource(R.drawable.group_type_selected);
-
             }
         } catch (Exception e) {
             groupHome.setBackgroundColor(selectedGroupType.equals("Home") ?
@@ -246,6 +246,7 @@ public class DashboardActivity extends AppCompatActivity {
 
     private void showMainContent() {
         try {
+            // Clear any existing fragments
             FragmentManager fragmentManager = getSupportFragmentManager();
             Fragment currentFragment = fragmentManager.findFragmentById(R.id.fragment_container);
             if (currentFragment != null) {
@@ -254,6 +255,7 @@ public class DashboardActivity extends AppCompatActivity {
                 transaction.commitAllowingStateLoss();
             }
 
+            // Show the main dashboard content (ScrollView) and hide fragment container
             if (mainScrollView != null) {
                 mainScrollView.setVisibility(View.VISIBLE);
             }
@@ -265,15 +267,17 @@ public class DashboardActivity extends AppCompatActivity {
 
     private void loadFragment(Fragment fragment) {
         try {
-
-            if (fragmentContainer != null) {
-                fragmentContainer.setVisibility(View.VISIBLE);
+            // Hide the main ScrollView when loading fragments
+            if (mainScrollView != null) {
+                mainScrollView.setVisibility(View.GONE);
             }
 
+            // Load the fragment into the fragment container
             FragmentManager fragmentManager = getSupportFragmentManager();
             FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
             fragmentTransaction.replace(R.id.fragment_container, fragment);
             fragmentTransaction.commitAllowingStateLoss();
+
         } catch (Exception e) {
             Toast.makeText(this, "Error loading fragment", Toast.LENGTH_SHORT).show();
         }
@@ -287,10 +291,12 @@ public class DashboardActivity extends AppCompatActivity {
                     FragmentManager fragmentManager = getSupportFragmentManager();
                     Fragment currentFragment = fragmentManager.findFragmentById(R.id.fragment_container);
 
-                    if (currentFragment != null && fragmentContainer.getVisibility() == View.VISIBLE) {
+                    // If we're showing a fragment and not the main content, go back to home
+                    if (currentFragment != null && mainScrollView != null && mainScrollView.getVisibility() == View.GONE) {
                         bottomNavigationView.setSelectedItemId(R.id.navigation_home);
                         showMainContent();
                     } else {
+                        // Exit the app
                         finish();
                     }
                 } catch (Exception e) {

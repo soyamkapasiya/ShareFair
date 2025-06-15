@@ -141,7 +141,7 @@ public class ProfileActivity extends AppCompatActivity {
             if (phoneNumber != null && !phoneNumber.isEmpty()) {
                 tvPhoneNumber.setText(phoneNumber);
             } else {
-                tvPhoneNumber.setText("No phone number");
+                tvPhoneNumber.setText(" ");
             }
 
             Uri photoUrl = currentUser.getPhotoUrl();
