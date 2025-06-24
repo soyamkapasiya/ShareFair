@@ -14,7 +14,7 @@ import java.util.List;
 public class NotificationActivity extends Activity {
 
     private List<NotificationItems> notificationItems;
-    private RecyclerView recyclerView;
+
     private NotificationAdapter adapter; // You'll need to create this adapter
 
     @Override
@@ -32,6 +32,7 @@ public class NotificationActivity extends Activity {
     }
 
     private void setupRecyclerView() {
+        RecyclerView recyclerView;
         recyclerView = findViewById(R.id.recycler_view_notifications);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
 
