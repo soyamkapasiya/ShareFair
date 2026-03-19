@@ -1,0 +1,69 @@
+{
+  "project_info": {
+    "project_number": "381391310896",
+    "firebase_url": "https://sharefair-83499-default-rtdb.firebaseio.com",
+    "project_id": "sharefair-83499",
+    "storage_bucket": "sharefair-83499.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:381391310896:android:c850ab378ba5a2392cddf5",
+        "android_client_info": {
+          "package_name": "com.kapasiya.sharefair"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "381391310896-elk5pu28ij75u4m6fo1gb3p4ce1mruk4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyC1l1VwZ8y9P2-1kt74RLMCIrDOTuRiM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "381391310896-elk5pu28ij75u4m6fo1gb3p4ce1mruk4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:381391310896:android:9e2988b0232820fa2cddf5",
+        "android_client_info": {
+          "package_name": "com.kapasiya.sharefair2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "381391310896-elk5pu28ij75u4m6fo1gb3p4ce1mruk4.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDyC1l1VwZ8y9P2-1kt74RLMCIrDOTuRiM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "381391310896-elk5pu28ij75u4m6fo1gb3p4ce1mruk4.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

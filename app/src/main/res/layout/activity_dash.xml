@@ -315,45 +315,72 @@
                     android:textSize="18sp"
                     android:textStyle="bold" />
 
+                <!-- Main Container Layout -->
                 <LinearLayout
                     android:id="@+id/groupsContainer"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="120dp"
                     android:layout_marginHorizontal="24dp"
                     android:layout_marginTop="16dp"
                     android:orientation="horizontal">
 
                     <!-- Create New Group Button -->
-                    <LinearLayout
-                        android:id="@+id/createNewGroup"
+                    <androidx.cardview.widget.CardView
+                        android:id="@+id/createNewGroupCard"
                         android:layout_width="80dp"
                         android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:orientation="vertical">
+                        android:layout_margin="8dp"
+                        android:layout_marginEnd="16dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?android:attr/selectableItemBackground"
+                        app:cardCornerRadius="16dp"
+                        app:cardElevation="6dp">
 
-                        <androidx.cardview.widget.CardView
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            app:cardBackgroundColor="#000000"
-                            app:cardCornerRadius="28dp">
-
-                            <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
-                                android:layout_gravity="center"
-                                android:contentDescription="@string/create_new"
-                                android:src="@drawable/ic_add"
-                                app:tint="#FFFFFF" />
-                        </androidx.cardview.widget.CardView>
-
-                        <TextView
-                            android:layout_width="wrap_content"
+                        <LinearLayout
+                            android:id="@+id/createNewGroup"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
-                            android:text="@string/create_new"
-                            android:textColor="#FFFFFF"
-                            android:textSize="12sp" />
-                    </LinearLayout>
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:padding="12dp">
+
+                            <androidx.cardview.widget.CardView
+                                android:layout_width="56dp"
+                                android:layout_height="56dp"
+                                app:cardBackgroundColor="#000000"
+                                app:cardCornerRadius="28dp"
+                                app:cardElevation="4dp">
+
+                                <ImageView
+                                    android:layout_width="24dp"
+                                    android:layout_height="24dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="@string/create_new"
+                                    android:src="@drawable/ic_add"
+                                    app:tint="#FFFFFF" />
+                            </androidx.cardview.widget.CardView>
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:text="@string/create_new"
+                                android:textColor="@color/black"
+                                android:textSize="12sp"
+                                android:gravity="center"
+                                android:maxLines="2"
+                                android:ellipsize="end" />
+                        </LinearLayout>
+                    </androidx.cardview.widget.CardView>
+
+                    <!-- RecyclerView for groups -->
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/group_logo_recycler"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="horizontal"
+                        app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
 
                 </LinearLayout>
 

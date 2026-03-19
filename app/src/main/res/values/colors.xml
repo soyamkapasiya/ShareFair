@@ -4,6 +4,10 @@
     <color name="white">#FFFFFFFF</color>
     <color name="primary">#6c74e2</color>
     <color name="primary_dark">#4051B5</color>
+    <color name="sky_blue">#87CEEB</color>
+    <color name="sky_blue_dark">#0077BE</color>
+    <color name="sky_blue_light">#AEDFF7</color>
+    <color name="background_blue">#1A1C2E</color>
     <color name="bottom_nav_item_color">#E91E63</color>
     <color name="accent">#FFD700</color>
     <color name="abc">#ACACAC</color>

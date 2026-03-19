@@ -2,6 +2,14 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.ShareFair" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">@color/sky_blue_light</item>
+        <item name="colorSecondary">@color/sky_blue</item>
+    </style>
+
+    <!-- Splash Screen Theme (Night) -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/background_blue</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo_premium</item>
+        <item name="postSplashScreenTheme">@style/Theme.ShareFair</item>
     </style>
 </resources>
