@@ -1,39 +1,18 @@
 package com.kapasiya.sharefair
 
-import android.annotation.SuppressLint
 import android.content.ContentValues.TAG
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
-import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.credentials.CredentialManager
 import androidx.credentials.GetCredentialRequest
 import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.GetCredentialException
+import androidx.credentials.exceptions.NoCredentialException
+import androidx.core.content.ContextCompat
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
@@ -44,6 +23,8 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.kapasiya.sharefair.ui.theme.ShareFairTheme
 import com.kapasiya.sharefair.ui.screens.SignUpScreen
+import java.security.MessageDigest
+import java.util.UUID
 
 class SignUpActivity : ComponentActivity() {
 
@@ -110,27 +91,52 @@ class SignUpActivity : ComponentActivity() {
     }
 
     private fun signInWithGoogle() {
+        val serverClientId = getString(R.string.default_web_client_id)
+        val rawNonce = UUID.randomUUID().toString()
+        val bytes = rawNonce.toByteArray()
+        val md = MessageDigest.getInstance("SHA-256")
+        val digest = md.digest(bytes)
+        val hashedNonce = digest.fold("") { str, it -> str + "%02x".format(it) }
+
         val googleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
-            .setServerClientId(getString(R.string.client_id))
-            .setAutoSelectEnabled(true)
+            .setServerClientId(serverClientId)
+            .setNonce(hashedNonce)
+            .setAutoSelectEnabled(false)
             .build()
+
         val request = GetCredentialRequest.Builder().addCredentialOption(googleIdOption).build()
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            credentialManager.getCredentialAsync(this, request, null, mainExecutor,
-                object : androidx.credentials.CredentialManagerCallback<GetCredentialResponse, GetCredentialException> {
-                    override fun onResult(result: GetCredentialResponse) {
+        val executor = ContextCompat.getMainExecutor(this)
+        credentialManager.getCredentialAsync(this, request, null, executor,
+            object : androidx.credentials.CredentialManagerCallback<GetCredentialResponse, GetCredentialException> {
+                override fun onResult(result: GetCredentialResponse) {
+                    try {
                         val credential = GoogleIdTokenCredential.createFrom(result.credential.data)
                         auth.signInWithCredential(GoogleAuthProvider.getCredential(credential.idToken, null))
                             .addOnCompleteListener { task ->
-                                if (task.isSuccessful) navigateToMainActivity()
+                                if (task.isSuccessful) {
+                                    navigateToMainActivity()
+                                } else {
+                                    Log.e(TAG, "Firebase auth failed", task.exception)
+                                    Toast.makeText(this@SignUpActivity, "Google Sign-in failed at Firebase: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                                }
                             }
+                    } catch (e: Exception) {
+                        Log.e(TAG, "Google ID Token parsing failed", e)
+                        Toast.makeText(this@SignUpActivity, "Google Sign-in error: ${e.message}", Toast.LENGTH_LONG).show()
                     }
-                    override fun onError(e: GetCredentialException) { Log.e(TAG, "Auth failed", e) }
                 }
-            )
-        }
+                override fun onError(e: GetCredentialException) {
+                    Log.e(TAG, "Auth failed: ${e.javaClass.simpleName}", e)
+                    val friendlyMessage = when(e) {
+                        is NoCredentialException -> "No Google accounts found. Please add an account to your device."
+                        else -> "Google Sign-in failed: ${e.message}"
+                    }
+                    Toast.makeText(this@SignUpActivity, friendlyMessage, Toast.LENGTH_LONG).show()
+                }
+            }
+        )
     }
 
     private fun navigateToMainActivity() {

@@ -1,7 +1,6 @@
 package com.kapasiya.sharefair.ui.screens
 
 import android.widget.Toast
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
@@ -10,12 +9,12 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.material3.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.blur
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -65,219 +64,239 @@ fun AddBillScreen(
         }
     }
 
-    Surface(
-        color = MaterialTheme.colorScheme.background,
-        modifier = Modifier.fillMaxSize()
-    ) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            // Background Elements...
-            Box(
-                modifier = Modifier
-                    .size(200.dp)
-                    .offset(x = (-50).dp, y = 50.dp)
-                    .blur(60.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(24.dp)
-            ) {
-                // Header
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Add an expense", fontSize = 20.sp, fontWeight = FontWeight.Bold) },
+                navigationIcon = {
                     IconButton(onClick = onBack) {
+                        Icon(Icons.Default.Close, contentDescription = "Close")
+                    }
+                },
+                actions = {
+                    TextButton(
+                        onClick = {
+                            val total = amount.toDoubleOrNull() ?: 0.0
+                            if (total > 0 && title.isNotEmpty() && selectedParticipants.isNotEmpty()) {
+                                handleSplitAndSave(
+                                    total, title, splitType, selectedParticipants, 
+                                    exactAmounts, billViewModel, groupId, context, onBack
+                                )
+                            } else {
+                                Toast.makeText(context, "Check inputs... total, title & users", Toast.LENGTH_SHORT).show()
+                            }
+                        },
+                        enabled = uiState !is BillUiState.Loading
+                    ) {
+                        Text("Save", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+            )
+        }
+    ) { padding ->
+        Column(
+            modifier = Modifier
+                .padding(padding)
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+        ) {
+            // Participant Info Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("With ", color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
+                Text(
+                    text = if (selectedParticipants.size == members.size) "you and the whole group" else "you and ${selectedParticipants.size - 1} others",
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+            }
+
+            Divider(modifier = Modifier.padding(horizontal = 16.dp), thickness = 0.5.dp, color = MaterialTheme.colorScheme.outlineVariant)
+
+            // Main Input Area (Splitwise Style)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                // Category Icon
+                Surface(
+                    modifier = Modifier.size(64.dp),
+                    shape = RoundedCornerShape(12.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant),
+                    color = MaterialTheme.colorScheme.surface
+                ) {
+                    Box(contentAlignment = Alignment.Center) {
                         Icon(
-                            painterResource(android.R.drawable.ic_menu_revert), 
-                            contentDescription = "back", 
-                            tint = MaterialTheme.colorScheme.onBackground
+                            Icons.Default.Restaurant, 
+                            contentDescription = null, 
+                            modifier = Modifier.size(32.dp),
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
                         )
                     }
-                    Text(
-                        "Add Bill", 
-                        fontSize = 24.sp, 
-                        fontWeight = FontWeight.Bold, 
-                        color = MaterialTheme.colorScheme.onBackground
-                    )
                 }
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(modifier = Modifier.width(16.dp))
 
-                // Amount Section
-                Card(
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(32.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
-                ) {
-                    Column(modifier = Modifier.padding(24.dp), horizontalAlignment = Alignment.CenterHorizontally) {
-                        OutlinedTextField(
+                Column(modifier = Modifier.weight(1f)) {
+                    TextField(
+                        value = title,
+                        onValueChange = { title = it },
+                        placeholder = { Text("Enter a description", fontSize = 18.sp) },
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = Color.Transparent,
+                            unfocusedContainerColor = Color.Transparent,
+                            focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                            unfocusedIndicatorColor = MaterialTheme.colorScheme.outlineVariant
+                        ),
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth()
+                    )
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Surface(
+                            shape = RoundedCornerShape(4.dp),
+                            color = MaterialTheme.colorScheme.surfaceVariant,
+                            modifier = Modifier.padding(end = 8.dp)
+                        ) {
+                            Text("₹", modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp), fontWeight = FontWeight.Bold)
+                        }
+                        TextField(
                             value = amount,
                             onValueChange = { amount = it },
-                            placeholder = { Text("0.00", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.3f), fontSize = 48.sp) },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = Color.Transparent,
-                                unfocusedBorderColor = Color.Transparent,
-                                cursorColor = MaterialTheme.colorScheme.primary,
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
-                            ),
+                            placeholder = { Text("0.00", fontSize = 24.sp) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                            textStyle = LocalTextStyle.current.copy(
-                                fontSize = 48.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface,
-                                textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                            )
-                        )
-                        Text(
-                            "TOTAL AMOUNT", 
-                            color = MaterialTheme.colorScheme.onSurfaceVariant, 
-                            fontSize = 12.sp, 
-                            fontWeight = FontWeight.SemiBold
-                        )
-                        
-                        Spacer(modifier = Modifier.height(16.dp))
-                        
-                        OutlinedTextField(
-                            value = title,
-                            onValueChange = { title = it },
-                            placeholder = { Text("What for?", color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)) },
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = OutlinedTextFieldDefaults.colors(
-                                focusedBorderColor = MaterialTheme.colorScheme.primary,
-                                unfocusedBorderColor = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.1f),
-                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = Color.Transparent,
+                                unfocusedContainerColor = Color.Transparent,
+                                focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                                unfocusedIndicatorColor = MaterialTheme.colorScheme.outlineVariant
                             ),
-                            shape = RoundedCornerShape(16.dp)
+                            singleLine = true,
+                            textStyle = androidx.compose.ui.text.TextStyle(fontSize = 24.sp, fontWeight = FontWeight.Bold),
+                            modifier = Modifier.fillMaxWidth()
                         )
                     }
                 }
+            }
 
-                Spacer(modifier = Modifier.height(24.dp))
-
-                // Split Selector
-                TabRow(
-                    selectedTabIndex = if (splitType == "EQUAL") 0 else 1,
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
-                    contentColor = MaterialTheme.colorScheme.primary,
-                    indicator = { tabPositions ->
-                        TabRowDefaults.SecondaryIndicator(
-                            Modifier.tabIndicatorOffset(tabPositions[if (splitType == "EQUAL") 0 else 1]),
-                            color = MaterialTheme.colorScheme.primary
-                        )
-                    },
-                    divider = {},
-                    modifier = Modifier.clip(RoundedCornerShape(16.dp))
+            // Paid By / Split Info Row
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text("Paid by ", color = MaterialTheme.colorScheme.onBackground)
+                Surface(
+                    modifier = Modifier.clickable { /* Choose Payer */ },
+                    shape = RoundedCornerShape(4.dp),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                 ) {
-                    Tab(
-                        selected = splitType == "EQUAL",
-                        onClick = { splitType = "EQUAL" },
-                        text = { Text("Equal") }
-                    )
-                    Tab(
-                        selected = splitType == "EXACT",
-                        onClick = { splitType = "EXACT" },
-                        text = { Text("Exact") }
+                    Text("you", modifier = Modifier.padding(horizontal = 4.dp), color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+                }
+                Text(" and split ", color = MaterialTheme.colorScheme.onBackground)
+                Surface(
+                    modifier = Modifier.clickable { splitType = if (splitType == "EQUAL") "EXACT" else "EQUAL" },
+                    shape = RoundedCornerShape(4.dp),
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                ) {
+                    Text(
+                        text = if (splitType == "EQUAL") "equally" else "exactly", 
+                        modifier = Modifier.padding(horizontal = 4.dp), 
+                        color = MaterialTheme.colorScheme.primary, 
+                        fontWeight = FontWeight.Bold
                     )
                 }
+                Text(".", color = MaterialTheme.colorScheme.onBackground)
+            }
 
-                Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-                Text(
-                    "Split with", 
-                    color = MaterialTheme.colorScheme.onBackground, 
-                    fontWeight = FontWeight.Bold, 
-                    fontSize = 18.sp
-                )
-                
-                // Participants Multi-select List
-                LazyColumn(
-                    modifier = Modifier.weight(1f),
-                    contentPadding = PaddingValues(vertical = 16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    if (members.isEmpty()) {
-                        item {
-                            LinearProgressIndicator(modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(4.dp)))
-                        }
-                    } else {
-                        items(members) { user ->
-                            ParticipantSelectionItem(
-                                user = user,
-                                isSelected = selectedParticipants.contains(user.id),
-                                splitType = splitType,
-                                exactAmount = exactAmounts[user.id] ?: "",
-                                onToggle = {
-                                    if (selectedParticipants.contains(user.id)) {
-                                        selectedParticipants.remove(user.id)
-                                    } else {
-                                        selectedParticipants.add(user.id)
-                                    }
-                                },
-                                onAmountChange = { exactAmounts[user.id] = it }
-                            )
-                        }
-                    }
-                }
-
-                // Split Button
-                Button(
-                    onClick = {
-                        val total = amount.toDoubleOrNull() ?: 0.0
-                        if (total > 0 && title.isNotEmpty() && selectedParticipants.isNotEmpty()) {
-                            val participantsMap = if (splitType == "EQUAL") {
-                                val share = total / selectedParticipants.size
-                                selectedParticipants.associateWith { share }
+            // Multi-user Selection (Visible when choosing split details)
+            Text(
+                "Choosing participants", 
+                modifier = Modifier.padding(horizontal = 16.dp), 
+                fontSize = 12.sp, 
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+            )
+            
+            LazyColumn(
+                modifier = Modifier.weight(1f),
+                contentPadding = PaddingValues(16.dp),
+                verticalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                items(members) { user ->
+                    ParticipantRow(
+                        user = user,
+                        isSelected = selectedParticipants.contains(user.id),
+                        splitType = splitType,
+                        exactAmount = exactAmounts[user.id] ?: "",
+                        onToggle = {
+                            if (selectedParticipants.contains(user.id)) {
+                                if (selectedParticipants.size > 1) selectedParticipants.remove(user.id)
                             } else {
-                                selectedParticipants.associateWith { exactAmounts[it]?.toDoubleOrNull() ?: 0.0 }
+                                selectedParticipants.add(user.id)
                             }
-                            
-                            // Check sum if Exact
-                            if (splitType == "EXACT") {
-                                val sum = participantsMap.values.sum()
-                                if (kotlin.math.abs(sum - total) > 0.01) {
-                                    Toast.makeText(context, "Amounts must equal total ₹$total", Toast.LENGTH_SHORT).show()
-                                    return@Button
-                                }
-                            }
-
-                            billViewModel.addBill(groupId, title, total, splitType, participantsMap) {
-                                Toast.makeText(context, "Bill Added!", Toast.LENGTH_SHORT).show()
-                                onBack()
-                            }
-                        } else {
-                            Toast.makeText(context, "Check inputs... total, title & users", Toast.LENGTH_SHORT).show()
-                        }
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(56.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        contentColor = MaterialTheme.colorScheme.onPrimary
-                    ),
-                    enabled = uiState !is BillUiState.Loading
-                ) {
-                    if (uiState is BillUiState.Loading) {
-                        CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary, modifier = Modifier.size(24.dp))
-                    } else {
-                        Text("Save Bill", fontSize = 18.sp, fontWeight = FontWeight.Bold)
-                    }
+                        },
+                        onAmountChange = { exactAmounts[user.id] = it }
+                    )
                 }
+            }
+        }
+        
+        if (uiState is BillUiState.Loading) {
+            Box(modifier = Modifier.fillMaxSize().background(Color.Black.copy(alpha = 0.3f)), contentAlignment = Alignment.Center) {
+                CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
             }
         }
     }
 }
 
+private fun handleSplitAndSave(
+    total: Double,
+    title: String,
+    splitType: String,
+    selectedParticipants: List<String>,
+    exactAmounts: Map<String, String>,
+    billViewModel: BillViewModel,
+    groupId: String,
+    context: android.content.Context,
+    onBack: () -> Unit
+) {
+    val participantsMap = if (splitType == "EQUAL") {
+        val share = total / selectedParticipants.size
+        selectedParticipants.associateWith { share }
+    } else {
+        selectedParticipants.associateWith { exactAmounts[it]?.toDoubleOrNull() ?: 0.0 }
+    }
+    
+    // Check sum if Exact
+    if (splitType == "EXACT") {
+        val sum = participantsMap.values.sum()
+        if (kotlin.math.abs(sum - total) > 0.01) {
+            Toast.makeText(context, "Amounts must equal total ₹$total", Toast.LENGTH_SHORT).show()
+            return
+        }
+    }
+
+    billViewModel.addBill(groupId, title, total, splitType, participantsMap) {
+        Toast.makeText(context, "Bill Added!", Toast.LENGTH_SHORT).show()
+        onBack()
+    }
+}
+
 @Composable
-fun ParticipantSelectionItem(
+fun ParticipantRow(
     user: User,
     isSelected: Boolean,
     splitType: String,
@@ -285,69 +304,51 @@ fun ParticipantSelectionItem(
     onToggle: () -> Unit,
     onAmountChange: (String) -> Unit
 ) {
-    Card(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { onToggle() },
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = if (isSelected) MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f) 
-                           else MaterialTheme.colorScheme.surface
-        ),
-        border = if (isSelected) BorderStroke(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)) else null
+            .clickable { onToggle() }
+            .padding(vertical = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+        Surface(
+            modifier = Modifier.size(40.dp),
+            shape = CircleShape,
+            color = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surfaceVariant
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    user.name.take(1).uppercase(),
-                    color = MaterialTheme.colorScheme.primary,
-                    fontWeight = FontWeight.Bold
-                )
+            Box(contentAlignment = Alignment.Center) {
+                Text(user.name.take(1).uppercase(), color = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant)
             }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            Column(modifier = Modifier.weight(1f)) {
-                Text(
-                    user.name,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.onSurface
-                )
-                Text(
-                    user.email,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
-            }
+        }
 
-            if (splitType == "EXACT" && isSelected) {
-                OutlinedTextField(
-                    value = exactAmount,
-                    onValueChange = onAmountChange,
-                    modifier = Modifier.width(100.dp),
-                    placeholder = { Text("0.00") },
-                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
-                    singleLine = true,
-                    shape = RoundedCornerShape(8.dp)
+        Spacer(modifier = Modifier.width(12.dp))
+
+        Text(
+            user.name, 
+            modifier = Modifier.weight(1f),
+            fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Normal,
+            color = if (isSelected) MaterialTheme.colorScheme.onBackground else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+        )
+
+        if (splitType == "EXACT" && isSelected) {
+            TextField(
+                value = exactAmount,
+                onValueChange = onAmountChange,
+                modifier = Modifier.width(100.dp),
+                placeholder = { Text("0.00") },
+                keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
+                singleLine = true,
+                colors = TextFieldDefaults.colors(
+                    focusedContainerColor = Color.Transparent,
+                    unfocusedContainerColor = Color.Transparent
                 )
-            } else {
-                Checkbox(
-                    checked = isSelected,
-                    onCheckedChange = { onToggle() },
-                    colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
-                )
-            }
+            )
+        } else {
+            Checkbox(
+                checked = isSelected,
+                onCheckedChange = { onToggle() },
+                colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
+            )
         }
     }
 }
