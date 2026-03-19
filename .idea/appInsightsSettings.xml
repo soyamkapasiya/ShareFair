@@ -9,9 +9,9 @@
               <option name="connection">
                 <ConnectionSetting>
                   <option name="appId" value="com.kapasiya.sharefair" />
-                  <option name="mobileSdkAppId" value="1:849949374093:android:eaea4e8dda6fd1c88514c4" />
-                  <option name="projectId" value="sharefair-6a89c" />
-                  <option name="projectNumber" value="849949374093" />
+                  <option name="mobileSdkAppId" value="1:381391310896:android:c850ab378ba5a2392cddf5" />
+                  <option name="projectId" value="sharefair-83499" />
+                  <option name="projectNumber" value="381391310896" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

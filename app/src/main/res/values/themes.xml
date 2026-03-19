@@ -2,8 +2,16 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.ShareFair" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/sky_blue</item>
+        <item name="colorSecondary">@color/sky_blue_dark</item>
     </style>
 
     <style name="Theme.ShareFair" parent="Base.Theme.ShareFair" />
+
+    <!-- Splash Screen Theme -->
+    <style name="Theme.App.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/white</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/ic_logo_premium</item>
+        <item name="postSplashScreenTheme">@style/Theme.ShareFair</item>
+    </style>
 </resources>
