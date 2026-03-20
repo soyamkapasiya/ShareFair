@@ -99,33 +99,43 @@ fun SummaryScreen(
 
 @Composable
 fun TotalExpenseCard(totalSpent: Double) {
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primary)
+    Surface(
+        modifier = Modifier.fillMaxWidth().height(160.dp),
+        shape = RoundedCornerShape(32.dp),
+        color = MaterialTheme.colorScheme.primary
     ) {
-        Column(
-            modifier = Modifier.padding(24.dp),
-            horizontalAlignment = Alignment.CenterHorizontally
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.linearGradient(
+                        colors = listOf(Color(0xFF1A237E), Color(0xFF4A148C))
+                    )
+                )
+                .padding(28.dp),
+            contentAlignment = Alignment.Center
         ) {
-            Text("Total Spending", color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f))
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                "₹${String.format("%.2f", totalSpent)}",
-                style = MaterialTheme.typography.headlineLarge,
-                fontWeight = FontWeight.ExtraBold,
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Surface(
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.2f),
-                shape = RoundedCornerShape(12.dp)
-            ) {
-                Row(
-                    modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-                    verticalAlignment = Alignment.CenterVertically
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text("Total Group Spending", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
+                Spacer(modifier = Modifier.height(4.dp))
+                Text(
+                    "₹${String.format("%.0f", totalSpent)}",
+                    style = MaterialTheme.typography.displayMedium,
+                    fontWeight = FontWeight.Black,
+                    color = Color.White
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Surface(
+                    color = Color.White.copy(alpha = 0.15f),
+                    shape = RoundedCornerShape(12.dp)
                 ) {
-                    Text("+12% from last month", color = MaterialTheme.colorScheme.onPrimary, fontSize = 12.sp)
+                    Text(
+                        "Trending 8% down this month", 
+                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                        color = Color.White, 
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold
+                    )
                 }
             }
         }
@@ -140,30 +150,33 @@ fun SpendingChartSection(monthlySpends: List<MonthlySpend>) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Monthly Overview", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+            Text("Monthly Trend", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
             TextButton(onClick = { }) {
-                Text("Last 6 Months")
+                Text("Last 6 Months", fontWeight = FontWeight.Bold)
                 Icon(Icons.Default.ExpandMore, contentDescription = null)
             }
         }
         
-        Card(
+        Surface(
             modifier = Modifier
                 .fillMaxWidth()
                 .height(240.dp),
-            shape = RoundedCornerShape(24.dp),
-            colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+            shape = RoundedCornerShape(28.dp),
+            color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+            border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.1f))
         ) {
-            Box(modifier = Modifier.padding(20.dp)) {
-                BarChart(monthlySpends)
-            }
-            
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-                horizontalArrangement = Arrangement.SpaceAround
-            ) {
-                monthlySpends.forEach { 
-                    Text(it.month, fontSize = 10.sp, color = Color.Gray)
+            Column(modifier = Modifier.padding(24.dp)) {
+                Box(modifier = Modifier.weight(1f)) {
+                    BarChart(monthlySpends)
+                }
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(top = 12.dp),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
+                    monthlySpends.forEach { 
+                        Text(it.month.take(3), fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f), fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }
@@ -174,19 +187,29 @@ fun SpendingChartSection(monthlySpends: List<MonthlySpend>) {
 fun BarChart(spends: List<MonthlySpend>) {
     val maxVal = spends.maxOfOrNull { it.amount } ?: 1.0
     val primaryColor = MaterialTheme.colorScheme.primary
+    val secondaryColor = MaterialTheme.colorScheme.secondary
     
     Canvas(modifier = Modifier.fillMaxSize()) {
-        val barWidth = size.width / (spends.size * 2)
+        val barWidth = 36.dp.toPx()
         val spacing = size.width / spends.size
         
         spends.forEachIndexed { index, spend ->
-            val barHeight = (spend.amount / maxVal * size.height).toFloat()
+            val barHeight = (spend.amount / maxVal * size.height).toFloat().coerceAtLeast(10f)
             val x = index * spacing + spacing / 2 - barWidth / 2
             
             drawRect(
-                color = primaryColor.copy(alpha = 0.7f),
+                brush = Brush.verticalGradient(listOf(primaryColor, secondaryColor)),
                 topLeft = Offset(x, size.height - barHeight),
-                size = Size(barWidth, barHeight)
+                size = Size(barWidth, barHeight),
+                alpha = 0.8f
+            )
+            
+            // Subtle shadow highlight at the top of the bar
+            drawLine(
+                color = Color.White.copy(alpha = 0.3f),
+                start = Offset(x, size.height - barHeight),
+                end = Offset(x + barWidth, size.height - barHeight),
+                strokeWidth = 2f
             )
         }
     }
@@ -194,61 +217,70 @@ fun BarChart(spends: List<MonthlySpend>) {
 
 @Composable
 fun CategoryBreakdownSection(categorySpends: List<com.kapasiya.sharefair.ui.viewmodel.CategorySpend>) {
-    val total = categorySpends.sumOf { it.amount }
+    val total = categorySpends.sumOf { it.amount }.coerceAtLeast(1.0)
     Column {
-        Text("Top Categories", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
+        Text("Top Categories", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.ExtraBold)
         Spacer(modifier = Modifier.height(16.dp))
         
         val colors = listOf(
-            MaterialTheme.colorScheme.primary,
-            MaterialTheme.colorScheme.secondary,
-            MaterialTheme.colorScheme.tertiary,
-            Color.Gray,
-            Color.LightGray
+            Color(0xFF5C6BC0), // Indigo
+            Color(0xFF26A69A), // Teal
+            Color(0xFFFF7043), // Deep Orange
+            Color(0xFFAB47BC), // Purple
+            Color(0xFF8D6E63)  // Brown
         )
         
         categorySpends.forEachIndexed { index, category ->
-            val percentage = if (total > 0) (category.amount / total * 100).toInt() else 0
+            val percentage = (category.amount / total * 100).toInt()
             val color = colors[index % colors.size]
             
-            Row(
-                modifier = Modifier.padding(vertical = 8.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(color))
-                Spacer(modifier = Modifier.width(12.dp))
-                Text(category.category, modifier = Modifier.weight(1f))
-                Text("$percentage%", fontWeight = FontWeight.Bold)
+            Column(modifier = Modifier.padding(vertical = 10.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Surface(modifier = Modifier.size(8.dp), shape = CircleShape, color = color) {}
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(category.category, modifier = Modifier.weight(1f), fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                    Text("₹${category.amount.toInt()}", fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("($percentage%)", color = Color.Gray, fontSize = 12.sp)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                LinearProgressIndicator(
+                    progress = { percentage / 100f },
+                    modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
+                    color = color,
+                    trackColor = color.copy(alpha = 0.1f)
+                )
             }
-            LinearProgressIndicator(
-                progress = { percentage / 100f },
-                modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                color = color,
-                trackColor = color.copy(alpha = 0.1f)
-            )
         }
     }
 }
 
 @Composable
 fun RecentInsightsSection() {
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.4f))
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f))
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(20.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Icon(Icons.Default.PieChart, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+            Surface(modifier = Modifier.size(44.dp), shape = CircleShape, color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)) {
+                Icon(Icons.Default.PieChart, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(10.dp))
+            }
             Spacer(modifier = Modifier.width(16.dp))
             Column {
-                Text("Smart Insight", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                Text("AI Smart Insight", fontWeight = FontWeight.Black, color = MaterialTheme.colorScheme.secondary, fontSize = 14.sp)
                 Text(
-                    "You spent 15% less on Dining out this week compared to last week. Good job!",
+                    "You saved ₹1,240 by splitting 'Dining' proportionally this month. That's a 15% improvement!",
                     fontSize = 13.sp,
-                    lineHeight = 18.sp
+                    lineHeight = 18.sp,
+                    color = MaterialTheme.colorScheme.onSecondaryContainer.copy(alpha = 0.8f)
                 )
             }
         }

@@ -122,21 +122,20 @@ fun ProfileScreen(
             Spacer(modifier = Modifier.height(40.dp))
 
             // Settings Section
-            Card(
+            Surface(
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(24.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-                )
+                shape = RoundedCornerShape(32.dp),
+                color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+                border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
             ) {
-                Column(modifier = Modifier.padding(8.dp)) {
+                Column(modifier = Modifier.padding(12.dp)) {
                     SettingItem("My Account", Icons.Default.AccountCircle)
-                    SettingItem("Spending Analytics", Icons.Default.BarChart) {
+                    SettingItem("Spending Analytics", Icons.Default.TrendingUp) {
                         onNavigateAnalytics()
                     }
-                    SettingItem("Payment Methods", Icons.Default.Payment)
+                    SettingItem("Payment Methods", Icons.Default.Payments)
                     
-                    var fingerprintEnabled by remember { mutableStateOf(false) }
+                    var fingerprintEnabled by remember { mutableStateOf(true) }
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -144,19 +143,19 @@ fun ProfileScreen(
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Surface(
-                            modifier = Modifier.size(40.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            color = MaterialTheme.colorScheme.surface
+                            modifier = Modifier.size(44.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
                         ) {
                             Icon(
                                 Icons.Default.Fingerprint,
                                 contentDescription = null,
-                                modifier = Modifier.padding(10.dp),
+                                modifier = Modifier.padding(12.dp),
                                 tint = MaterialTheme.colorScheme.primary
                             )
                         }
                         Spacer(modifier = Modifier.width(16.dp))
-                        Text("Fingerprint Lock", fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                        Text("Biometric Security", fontWeight = FontWeight.ExtraBold, modifier = Modifier.weight(1f))
                         Switch(
                             checked = fingerprintEnabled,
                             onCheckedChange = { fingerprintEnabled = it }
@@ -164,51 +163,58 @@ fun ProfileScreen(
                     }
                     
                     SettingItem("Privacy & Security", Icons.Default.Lock)
-                    SettingItem("Settings", Icons.Default.Settings)
+                    SettingItem("App Settings", Icons.Default.Settings)
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(28.dp))
 
             // Linked Accounts Section
             Text(
-                "Linked Accounts (Auto-Fetch)", 
-                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
-                fontSize = 14.sp, 
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                "CONNECTED SERVICES (AUTO-FETCH)", 
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 12.dp),
+                fontSize = 11.sp, 
+                letterSpacing = 1.sp,
+                fontWeight = FontWeight.Black,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f)
             )
             
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(16.dp))
             
             Row(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
+                horizontalArrangement = Arrangement.spacedBy(20.dp),
             ) {
                 val services = listOf("Zomato" to Color(0xFFCB202D), "Swiggy" to Color(0xFFFC8019), "Zepto" to Color(0xFF5E2B97))
                 services.forEach { (name, color) ->
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Surface(
-                            modifier = Modifier.size(50.dp),
-                            shape = CircleShape,
-                            color = color.copy(alpha = 0.1f),
-                            border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.3f))
+                            modifier = Modifier.size(56.dp),
+                            shape = RoundedCornerShape(18.dp),
+                            color = color.copy(alpha = 0.15f),
+                            border = androidx.compose.foundation.BorderStroke(2.dp, color.copy(alpha = 0.4f))
                         ) {
-                            Icon(Icons.Default.CloudQueue, contentDescription = null, tint = color, modifier = Modifier.padding(12.dp))
+                            Icon(
+                                imageVector = if (name == "Zepto") Icons.Default.Bolt else Icons.Default.Restaurant, 
+                                contentDescription = null, 
+                                tint = color, 
+                                modifier = Modifier.padding(14.dp)
+                            )
                         }
-                        Text(name, fontSize = 10.sp, color = color, fontWeight = FontWeight.Bold)
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Text(name, fontSize = 11.sp, color = color, fontWeight = FontWeight.ExtraBold)
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(40.dp))
+            Spacer(modifier = Modifier.weight(1f))
 
             Button(
                 onClick = onSignOut,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(56.dp),
-                shape = RoundedCornerShape(16.dp),
+                    .height(60.dp),
+                shape = RoundedCornerShape(20.dp),
                 colors = ButtonDefaults.buttonColors(
                     containerColor = MaterialTheme.colorScheme.errorContainer,
                     contentColor = MaterialTheme.colorScheme.error
@@ -216,7 +222,7 @@ fun ProfileScreen(
             ) {
                 Icon(Icons.Default.Logout, contentDescription = null)
                 Spacer(modifier = Modifier.width(8.dp))
-                Text("Sign Out", fontWeight = FontWeight.Bold)
+                Text("Sign Out Safely", fontWeight = FontWeight.ExtraBold)
             }
         }
     }

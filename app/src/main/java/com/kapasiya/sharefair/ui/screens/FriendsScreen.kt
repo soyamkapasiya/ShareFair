@@ -15,6 +15,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -105,22 +106,27 @@ fun FriendsList(friends: List<User>) {
 
 @Composable
 fun FriendItem(friend: User) {
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(20.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f))
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(18.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(56.dp)
+                    .size(60.dp)
                     .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                    .background(
+                        Brush.linearGradient(
+                            listOf(MaterialTheme.colorScheme.primaryContainer, MaterialTheme.colorScheme.secondaryContainer)
+                        )
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 if (friend.profileImageUrl.isNotEmpty()) {
@@ -138,54 +144,43 @@ fun FriendItem(friend: User) {
             Spacer(modifier = Modifier.width(16.dp))
 
             Column(modifier = Modifier.weight(1f)) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Text(
-                        text = friend.name,
-                        fontSize = 18.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onBackground,
-                        modifier = Modifier.weight(1f)
-                    )
-                    
-                    val balance = friend.totalBalance
-                    Text(
-                        text = if (balance >= 0) "owes você ₹$balance" else "you owe ₹${-balance}",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = if (balance >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error
-                    )
-                }
-                
                 Text(
-                    text = friend.email,
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f)
+                    text = friend.name,
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.onBackground
                 )
                 
-                Spacer(modifier = Modifier.height(10.dp))
-                
                 val balance = friend.totalBalance
-                val progress = (0.5f + (balance / 1000).coerceIn(-0.5, 0.5)).toFloat()
+                Text(
+                    text = if (balance >= 0) "Owes you ₹$balance" else "You owe ₹${-balance}",
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = if (balance >= 0) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error
+                )
                 
+                Spacer(modifier = Modifier.height(8.dp))
+                
+                // Balance Indicator Bar
+                val progress = (0.5f + (balance / 2000).coerceIn(-0.5, 0.5)).toFloat()
                 LinearProgressIndicator(
                     progress = { progress },
                     modifier = Modifier
-                        .fillMaxWidth()
+                        .fillMaxWidth(0.9f)
                         .height(6.dp)
                         .clip(RoundedCornerShape(3.dp)),
-                    color = if (balance >= 0) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.error,
-                    trackColor = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.2f)
+                    color = if (balance >= 0) Color(0xFF2E7D32) else MaterialTheme.colorScheme.error,
+                    trackColor = Color.LightGray.copy(alpha = 0.2f)
                 )
             }
             
-            Spacer(modifier = Modifier.width(8.dp))
-            
-            Icon(
-                Icons.Default.ChevronRight, 
-                contentDescription = null, 
-                tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f),
-                modifier = Modifier.size(16.dp)
-            )
+            IconButton(onClick = { /* Settle with friend */ }) {
+                Icon(
+                    Icons.Default.ChevronRight, 
+                    contentDescription = null, 
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.3f)
+                )
+            }
         }
     }
 }

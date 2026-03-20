@@ -38,7 +38,10 @@ import com.kapasiya.sharefair.ui.viewmodel.DashboardViewModel
 fun HomeScreen(
     viewModel: DashboardViewModel = viewModel(),
     onNotificationClick: () -> Unit = {},
-    onProfileClick: () -> Unit = {}
+    onProfileClick: () -> Unit = {},
+    onAddExpenseClick: () -> Unit = {},
+    onSettleUpClick: () -> Unit = {},
+    onNavigateToPersonal: () -> Unit = {}
 ) {
     val stats by viewModel.stats.collectAsState()
     var showChecklist by remember { mutableStateOf(true) }
@@ -68,23 +71,90 @@ fun HomeScreen(
                 BalanceCard(stats.totalBalance, stats.owesYou, stats.youOwe)
             }
 
-            // Real-time Personal Tracking Card
+            // Real-time Personal Tracking Card (Glassmorphism Effect)
             item {
-                Card(
-                    modifier = Modifier.fillMaxWidth().height(100.dp),
+                Surface(
+                    modifier = Modifier.fillMaxWidth().height(100.dp).clickable { onNavigateToPersonal() },
                     shape = RoundedCornerShape(24.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
+                    color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.4f),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
                 ) {
                     Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
-                        Surface(modifier = Modifier.size(48.dp), shape = CircleShape, color = MaterialTheme.colorScheme.secondary) {
-                            Icon(Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.padding(12.dp))
+                        Surface(
+                            modifier = Modifier.size(52.dp), 
+                            shape = CircleShape, 
+                            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+                        ) {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(14.dp))
                         }
                         Spacer(modifier = Modifier.width(16.dp))
                         Column(modifier = Modifier.weight(1f)) {
-                            Text("Personal Tracking", fontWeight = FontWeight.Bold)
-                            Text("Track your individual spendings", fontSize = 12.sp, color = Color.Gray)
+                            Text("Personal Tracking", fontWeight = FontWeight.ExtraBold, fontSize = 16.sp)
+                            Text("Track private spendings", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f))
                         }
-                        Text("₹${stats.youOwe * 0.5}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                        Text("₹${stats.youOwe * 0.4}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary, fontSize = 18.sp)
+                    }
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Button(
+                        onClick = onAddExpenseClick,
+                        modifier = Modifier.weight(1f).height(60.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                    ) {
+                        Icon(Icons.Default.Add, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Add Expense", fontWeight = FontWeight.Bold)
+                    }
+                    
+                    Button(
+                        onClick = onSettleUpClick,
+                        modifier = Modifier.weight(1f).height(60.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF2E7D32)), // Darker Forest Green
+                        elevation = ButtonDefaults.buttonElevation(defaultElevation = 4.dp)
+                    ) {
+                        Icon(Icons.Default.Payments, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Settle Up", fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            // Quick Khata (Lent/Got)
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    Card(
+                        modifier = Modifier.weight(1f).height(80.dp).clickable { /* Quick Lent */ },
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.errorContainer.copy(alpha = 0.2f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.error.copy(alpha = 0.1f))
+                    ) {
+                        Column(modifier = Modifier.fillMaxSize().padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                            Text("I Gave", fontSize = 12.sp, color = MaterialTheme.colorScheme.error.copy(alpha = 0.7f))
+                            Text("Lent (Lene) 🔴", color = MaterialTheme.colorScheme.error, fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
+                        }
+                    }
+                    Card(
+                        modifier = Modifier.weight(1f).height(80.dp).clickable { /* Quick Got */ },
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9).copy(alpha = 0.5f)),
+                        border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF4CAF50).copy(alpha = 0.2f))
+                    ) {
+                        Column(modifier = Modifier.fillMaxSize().padding(12.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+                            Text("I Got", fontSize = 12.sp, color = Color(0xFF2E7D32).copy(alpha = 0.7f))
+                            Text("Got (Dene) 🟢", color = Color(0xFF2E7D32), fontWeight = FontWeight.ExtraBold, fontSize = 14.sp)
+                        }
                     }
                 }
             }
@@ -259,32 +329,40 @@ fun BalanceCard(total: Double, owesYou: Double, youOwe: Double) {
     Card(
         modifier = Modifier
             .fillMaxWidth()
-            .height(180.dp),
-        shape = RoundedCornerShape(28.dp),
-        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
+            .height(200.dp),
+        shape = RoundedCornerShape(32.dp),
+        elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     brush = Brush.linearGradient(
-                        colors = listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary)
+                        colors = listOf(Color(0xFF1A237E), Color(0xFF311B92), Color(0xFF4A148C))
                     )
                 )
-                .padding(24.dp)
+                .padding(28.dp)
         ) {
             Column {
-                Text("Total Balance", color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.7f))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.AccountBalanceWallet, contentDescription = null, tint = Color.White.copy(alpha = 0.6f), modifier = Modifier.size(16.dp))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Total Net Balance", color = Color.White.copy(alpha = 0.7f), fontSize = 14.sp)
+                }
                 Text(
                     "₹$total",
-                    style = MaterialTheme.typography.displayLarge,
-                    color = MaterialTheme.colorScheme.onPrimary,
-                    fontWeight = FontWeight.Bold
+                    style = MaterialTheme.typography.displayMedium,
+                    color = Color.White,
+                    fontWeight = FontWeight.Black
                 )
                 Spacer(modifier = Modifier.weight(1f))
-                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                    BalanceInfoItem("Owes you", "₹$owesYou", MaterialTheme.colorScheme.onPrimary)
-                    BalanceInfoItem("You owe", "₹$youOwe", MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.6f))
+                Row(
+                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(Color.White.copy(alpha = 0.1f)).padding(16.dp),
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    BalanceInfoItem("Owes you", "₹$owesYou", Color(0xFF81C784))
+                    VerticalDivider(modifier = Modifier.height(30.dp), thickness = 1.dp, color = Color.White.copy(alpha = 0.2f))
+                    BalanceInfoItem("You owe", "₹$youOwe", Color(0xFFFF8A80))
                 }
             }
         }

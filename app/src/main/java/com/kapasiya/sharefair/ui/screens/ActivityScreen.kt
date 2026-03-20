@@ -24,9 +24,9 @@ import androidx.compose.ui.unit.sp
 fun ActivityScreen() {
     Scaffold(
         topBar = {
-            LargeTopAppBar(
-                title = { Text("Recent Activity", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.largeTopAppBarColors(
+            CenterAlignedTopAppBar(
+                title = { Text("Recent Activity", fontWeight = FontWeight.ExtraBold) },
+                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
                     containerColor = MaterialTheme.colorScheme.background
                 )
             )
@@ -36,15 +36,18 @@ fun ActivityScreen() {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .padding(horizontal = 20.dp),
+            verticalArrangement = Arrangement.spacedBy(16.dp),
+            contentPadding = PaddingValues(bottom = 100.dp)
         ) {
             item {
                 Text(
-                    "Today",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    "TODAY",
+                    fontSize = 11.sp,
+                    letterSpacing = 1.sp,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
                 )
             }
             
@@ -54,10 +57,12 @@ fun ActivityScreen() {
             
             item {
                 Text(
-                    "Yesterday",
-                    style = MaterialTheme.typography.titleMedium,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.padding(top = 16.dp, bottom = 8.dp)
+                    "YESTERDAY",
+                    fontSize = 11.sp,
+                    letterSpacing = 1.sp,
+                    fontWeight = FontWeight.Black,
+                    color = MaterialTheme.colorScheme.primary.copy(alpha = 0.6f),
+                    modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
                 )
             }
             
@@ -70,30 +75,30 @@ fun ActivityScreen() {
 
 @Composable
 fun ActivityItem(activity: ActivityData) {
-    Card(
+    Surface(
         modifier = Modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f)
-        )
+        shape = RoundedCornerShape(24.dp),
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
     ) {
         Row(
             modifier = Modifier
-                .padding(16.dp)
+                .padding(18.dp)
                 .fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(16.dp))
                     .background(activity.color.copy(alpha = 0.1f)),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     activity.icon,
                     contentDescription = null,
-                    tint = activity.color
+                    tint = activity.color,
+                    modifier = Modifier.size(24.dp)
                 )
             }
             
@@ -102,20 +107,25 @@ fun ActivityItem(activity: ActivityData) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     activity.title,
-                    fontWeight = FontWeight.Bold,
-                    fontSize = 15.sp
+                    fontWeight = FontWeight.ExtraBold,
+                    fontSize = 16.sp,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
                 Text(
                     activity.description,
                     fontSize = 13.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+                    lineHeight = 18.sp
                 )
             }
             
+            Spacer(modifier = Modifier.width(8.dp))
+            
             Text(
                 activity.time,
-                fontSize = 12.sp,
-                color = Color.Gray
+                fontSize = 11.sp,
+                color = Color.Gray,
+                fontWeight = FontWeight.Bold
             )
         }
     }

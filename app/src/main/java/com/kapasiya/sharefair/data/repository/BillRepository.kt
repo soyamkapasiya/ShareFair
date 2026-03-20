@@ -14,6 +14,10 @@ interface BillRepository {
     suspend fun addBill(groupId: String, bill: Bill)
     suspend fun deleteBill(groupId: String, bill: Bill)
     suspend fun settleUp(groupId: String, fromUserId: String, toUserId: String, amount: Double)
+    
+    // Solo Bill Support
+    fun getSoloBillsFlow(userId: String): Flow<List<Bill>>
+    suspend fun addSoloBill(userId: String, bill: Bill)
 }
 
 class BillRepositoryImpl(
@@ -110,5 +114,18 @@ class BillRepositoryImpl(
             
             null
         }.await()
+    }
+
+    override fun getSoloBillsFlow(userId: String): Flow<List<Bill>> {
+        return firestore.collection("users").document(userId).collection("solo_bills")
+            .orderBy("timestamp", Query.Direction.DESCENDING)
+            .snapshots()
+            .map { it.toObjects(Bill::class.java) }
+    }
+
+    override suspend fun addSoloBill(userId: String, bill: Bill) {
+        val soloBillsRef = firestore.collection("users").document(userId).collection("solo_bills").document()
+        val billWithId = bill.copy(id = soloBillsRef.id)
+        soloBillsRef.set(billWithId).await()
     }
 }

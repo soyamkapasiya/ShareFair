@@ -5,9 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.animation.*
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.*
@@ -44,18 +49,24 @@ fun MainScreen() {
     if (!showOnboarding) {
         Scaffold(
             bottomBar = {
-                BottomNavigationBar(navController = navController)
+                val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+                val showBottomBar = currentRoute in listOf("home", "friends", "groups", "personal")
+                if (showBottomBar) {
+                    BottomNavigationBar(navController = navController)
+                }
             },
             floatingActionButton = {
                 val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
-                if (currentRoute == "home" || currentRoute == "groups" || currentRoute == "friends") {
+                val showFAB = currentRoute in listOf("home", "friends", "groups", "personal")
+                if (showFAB) {
                     FloatingActionButton(
                         onClick = { navController.navigate("groups") },
                         containerColor = MaterialTheme.colorScheme.primary,
                         contentColor = MaterialTheme.colorScheme.onPrimary,
-                        shape = CircleShape
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = FloatingActionButtonDefaults.elevation(8.dp)
                     ) {
-                        Icon(androidx.compose.material.icons.Icons.Default.Add, contentDescription = "Add Expense")
+                        Icon(Icons.Default.Add, contentDescription = "Add Expense")
                     }
                 }
             }
@@ -68,7 +79,10 @@ fun MainScreen() {
                 composable("home") {
                     HomeScreen(
                         onNotificationClick = { navController.navigate("notifications") },
-                        onProfileClick = { navController.navigate("profile") }
+                        onProfileClick = { navController.navigate("profile") },
+                        onAddExpenseClick = { navController.navigate("groups") },
+                        onSettleUpClick = { navController.navigate("friends") },
+                        onNavigateToPersonal = { navController.navigate("personal") }
                     )
                 }
                 composable("friends") {
@@ -82,8 +96,11 @@ fun MainScreen() {
                         onAddGroupClick = { /* Handle create group */ }
                     )
                 }
-                composable("activity") {
-                    ActivityScreen()
+                composable("personal") {
+                    PersonalScreen(
+                        onAddSoloExpense = { navController.navigate("add_bill/solo") },
+                        onBack = { navController.popBackStack() }
+                    )
                 }
                 composable("notifications") {
                     NotificationScreen(

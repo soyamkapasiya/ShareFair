@@ -8,6 +8,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.automirrored.filled.ListAlt
 import androidx.compose.material.icons.automirrored.filled.Message
 import androidx.compose.material.icons.filled.*
@@ -84,14 +85,11 @@ fun GroupDetailsScreen(
                     }
                 )
             } else {
-                TopAppBar(
-                    title = { Text(group?.name ?: "Group Details", fontWeight = FontWeight.Bold) },
+                CenterAlignedTopAppBar(
+                    title = { Text(group?.name ?: "Group Details", fontWeight = FontWeight.ExtraBold) },
                     navigationIcon = {
                         IconButton(onClick = onBack) {
-                            Icon(
-                                painterResource(android.R.drawable.ic_menu_revert), 
-                                contentDescription = "back"
-                            )
+                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
                         }
                     },
                     actions = {
@@ -102,7 +100,7 @@ fun GroupDetailsScreen(
                             Icon(Icons.AutoMirrored.Filled.Message, contentDescription = "Group Chat")
                         }
                         IconButton(onClick = { showSimplified = !showSimplified }) {
-                            Icon(
+                             Icon(
                                 imageVector = if (showSimplified) Icons.AutoMirrored.Filled.ListAlt else Icons.Default.Payments, 
                                 contentDescription = "Toggle Simplify"
                             )
@@ -228,29 +226,62 @@ fun GroupDetailsScreen(
 fun GroupHeader(group: Group?) {
     if (group == null) return
     
-    Box(
+    Surface(
         modifier = Modifier
             .fillMaxWidth()
-            .height(120.dp)
-            .background(
-                Brush.verticalGradient(
-                    listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.primaryContainer)
-                )
-            ),
-        contentAlignment = Alignment.Center
+            .height(200.dp),
+        color = MaterialTheme.colorScheme.primary,
+        shape = RoundedCornerShape(bottomStart = 40.dp, bottomEnd = 40.dp),
+        shadowElevation = 12.dp
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                group.name, 
-                fontSize = 28.sp, 
-                fontWeight = FontWeight.Bold, 
-                color = MaterialTheme.colorScheme.onPrimary
-            )
-            Text(
-                "${group.members.size} members • ${if (group.type == "PERSONAL") "Personal Tracking" else "Group Split"}", 
-                fontSize = 14.sp, 
-                color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f)
-            )
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(
+                    Brush.verticalGradient(
+                        listOf(Color(0xFF1A1F71), Color(0xFF3B1C8D))
+                    )
+                )
+                .padding(28.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Surface(
+                    modifier = Modifier.size(64.dp),
+                    shape = RoundedCornerShape(20.dp),
+                    color = Color.White.copy(alpha = 0.15f)
+                ) {
+                    Icon(
+                        Icons.Default.Group, 
+                        contentDescription = null, 
+                        tint = Color.White, 
+                        modifier = Modifier.padding(16.dp)
+                    )
+                }
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    group.name, 
+                    color = Color.White, 
+                    fontWeight = FontWeight.Black, 
+                    fontSize = 26.sp
+                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Surface(
+                        modifier = Modifier.padding(top = 8.dp),
+                        color = Color.White.copy(alpha = 0.1f),
+                        shape = CircleShape
+                    ) {
+                        Text(
+                            "${group.members.size} PARTICIPANTS", 
+                            modifier = Modifier.padding(horizontal = 12.dp, vertical = 4.dp),
+                            color = Color.White.copy(alpha = 0.8f), 
+                            fontSize = 11.sp, 
+                            fontWeight = FontWeight.Black,
+                            letterSpacing = 1.sp
+                        )
+                    }
+                }
+            }
         }
     }
 }
@@ -259,8 +290,8 @@ fun GroupHeader(group: Group?) {
 fun BillsList(bills: List<Bill>) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(bottom = 80.dp),
-        verticalArrangement = Arrangement.spacedBy(1.dp)
+        contentPadding = PaddingValues(bottom = 100.dp, top = 8.dp, start = 16.dp, end = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         items(bills) { bill ->
             BillItem(bill)
@@ -271,24 +302,28 @@ fun BillsList(bills: List<Bill>) {
 @Composable
 fun BillItem(bill: Bill) {
     Surface(
-        color = MaterialTheme.colorScheme.surface,
-        modifier = Modifier.fillMaxWidth()
+        color = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.3f),
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(24.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.1f))
     ) {
         Row(
-            modifier = Modifier.padding(20.dp).fillMaxWidth(),
+            modifier = Modifier.padding(18.dp).fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
         ) {
             Box(
                 modifier = Modifier
-                    .size(44.dp)
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)),
+                    .size(52.dp)
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(
+                        if (bill.splitType == "SETTLEMENT") Color(0xFFE8F5E9) else MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+                    ),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
-                    Icons.AutoMirrored.Filled.ListAlt, 
+                    imageVector = if (bill.splitType == "SETTLEMENT") Icons.Default.CheckCircle else Icons.Default.Restaurant, 
                     contentDescription = null, 
-                    tint = MaterialTheme.colorScheme.secondary
+                    tint = if (bill.splitType == "SETTLEMENT") Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
                 )
             }
             
@@ -297,21 +332,30 @@ fun BillItem(bill: Bill) {
             Column(modifier = Modifier.weight(1f)) {
                 Text(
                     bill.title, 
-                    fontSize = 16.sp, 
-                    fontWeight = FontWeight.SemiBold
+                    fontSize = 17.sp, 
+                    fontWeight = FontWeight.ExtraBold,
+                    color = MaterialTheme.colorScheme.onSurface
                 )
-                Text(
-                    if (bill.splitType == "SETTLEMENT") "Settled" else "Paid by You", 
-                    fontSize = 12.sp, 
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                )
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Text(
+                        if (bill.splitType == "SETTLEMENT") "Completed Settlement" else "Shared Expense", 
+                        fontSize = 12.sp, 
+                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                    )
+                    if (bill.splitType == "ITEM_WISE") {
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Surface(shape = CircleShape, color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)) {
+                            Text("Item-wise", fontSize = 9.sp, color = MaterialTheme.colorScheme.secondary, modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp), fontWeight = FontWeight.Bold)
+                        }
+                    }
+                }
             }
             
             Text(
                 "₹${bill.amount}", 
                 fontSize = 18.sp, 
-                fontWeight = FontWeight.Bold, 
-                color = if (bill.splitType == "SETTLEMENT") Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary
+                fontWeight = FontWeight.ExtraBold, 
+                color = if (bill.splitType == "SETTLEMENT") Color(0xFF2E7D32) else MaterialTheme.colorScheme.primary
             )
         }
     }

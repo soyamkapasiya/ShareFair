@@ -7,6 +7,8 @@ data class Group(
     val recentActivity: List<String> = emptyList(),
     val groupBalance: Map<String, Double> = emptyMap(),
     val type: String = "GROUP", // GROUP, PERSONAL
+    val category: String = "OTHERS", // TRIP, RENT, PARTY, OTHERS
+    val imageUrl: String = "",
     val simplifyBalances: Boolean = true,
-    val collectionId: String? = null // For grouping bills into events like "Goa Trip"
+    val collectionId: String? = null
 )
