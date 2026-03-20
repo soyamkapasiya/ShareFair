@@ -26,13 +26,13 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.kapasiya.sharefair.ui.theme.*
 import com.kapasiya.sharefair.ui.viewmodel.BillViewModel
 import kotlinx.coroutines.delay
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SettleUpScreen(
+    groupId: String,
     friendId: String,
     amount: Double,
     friendName: String,
@@ -112,7 +112,6 @@ fun SettleUpScreen(
                 
                 Spacer(modifier = Modifier.height(64.dp))
                 
-                // One-tap "Settle" button with UPI integration
                 Button(
                     onClick = {
                         // UPI Integration Mock
@@ -120,13 +119,12 @@ fun SettleUpScreen(
                         val intent = Intent(Intent.ACTION_VIEW, upiUri)
                         try {
                             context.startActivity(intent)
-                            // After returning from UPI app, mark as settled
-                            viewModel.settleUp(friendId, amount) {
+                            viewModel.settleUp(groupId, friendId, amount) {
                                 isSettled = true
                             }
                         } catch (e: Exception) {
                             Toast.makeText(context, "No UPI app found. Marking as paid manually.", Toast.LENGTH_SHORT).show()
-                            viewModel.settleUp(friendId, amount) {
+                            viewModel.settleUp(groupId, friendId, amount) {
                                 isSettled = true
                             }
                         }

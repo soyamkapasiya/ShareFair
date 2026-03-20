@@ -85,13 +85,13 @@ class BillViewModel : ViewModel() {
         }
     }
 
-    fun settleUp(friendId: String, amount: Double, onSuccess: () -> Unit) {
+    fun settleUp(groupId: String, friendId: String, amount: Double, onSuccess: () -> Unit) {
         if (currentUserId.isEmpty()) return
         
         _uiState.value = BillUiState.Loading
         viewModelScope.launch {
             try {
-                billRepository.settleUp(currentUserId, friendId, amount)
+                billRepository.settleUp(groupId, currentUserId, friendId, amount)
                 _uiState.value = BillUiState.Success
                 onSuccess()
             } catch (e: Exception) {
