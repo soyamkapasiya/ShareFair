@@ -5,7 +5,6 @@ import com.kapasiya.sharefair.data.repository.*
 
 /**
  * Basic Service Locator to provide repository instances.
- * In a larger project, this should be replaced with Hilt or Koin.
  */
 object RepositoryModule {
     private val firestore: FirebaseFirestore by lazy {
@@ -22,5 +21,25 @@ object RepositoryModule {
 
     val billRepository: BillRepository by lazy {
         BillRepositoryImpl(firestore)
+    }
+    
+    val draftRepository: DraftRepository by lazy {
+        DraftRepositoryImpl(firestore)
+    }
+    
+    val recurringBillRepository: RecurringBillRepository by lazy {
+        RecurringBillRepositoryImpl(firestore)
+    }
+
+    val chatRepository: ChatRepository by lazy {
+        ChatRepositoryImpl(firestore)
+    }
+
+    val collectionRepository: CollectionRepository by lazy {
+        CollectionRepositoryImpl(firestore)
+    }
+
+    val notificationRepository: NotificationRepository by lazy {
+        NotificationRepositoryImpl(firestore)
     }
 }

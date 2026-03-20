@@ -12,8 +12,8 @@ import kotlinx.coroutines.tasks.await
 interface BillRepository {
     fun getBillsForGroupFlow(groupId: String): Flow<List<Bill>>
     suspend fun addBill(groupId: String, bill: Bill)
-    suspend fun updateBill(groupId: String, bill: Bill)
-    suspend fun settleUp(fromUserId: String, toUserId: String, amount: Double)
+    suspend fun deleteBill(groupId: String, bill: Bill)
+    suspend fun settleUp(groupId: String, fromUserId: String, toUserId: String, amount: Double)
 }
 
 class BillRepositoryImpl(
@@ -36,53 +36,77 @@ class BillRepositoryImpl(
             val billRef = billsCollection.document()
             val groupRef = firestore.collection("groups").document(groupId)
             
-            // 1. Create the Bill with an ID
             val billWithId = bill.copy(id = billRef.id)
             transaction.set(billRef, billWithId)
             
-            // 2. Update Group activity snippet
             transaction.update(groupRef, "recentActivity", FieldValue.arrayUnion("${bill.title}: ₹${bill.amount}"))
-
-            // 3. Update Payer Balance
-            // Payer is owed THE SUM OF ALL OTHER participants' shares.
-            val payerShare = bill.participantsMap[bill.payerId] ?: 0.0
-            val amountToBeRepaid = bill.amount - payerShare
             
-            if (amountToBeRepaid > 0) {
-                val payerRef = firestore.collection("users").document(bill.payerId)
-                transaction.update(payerRef, "totalBalance", FieldValue.increment(amountToBeRepaid))
-            }
-
-            // 4. Update Other Participants' Balances
-            // Everyone who was in the split (except the payer) owes their specific share.
-            bill.participantsMap.forEach { (userId, share) ->
-                if (userId != bill.payerId) {
-                    val userRef = firestore.collection("users").document(userId)
-                    transaction.update(userRef, "totalBalance", FieldValue.increment(-share))
-                }
-            }
+            updateBalances(transaction, groupId, bill, 1.0)
             
             null
         }.await()
     }
 
-    override suspend fun updateBill(groupId: String, bill: Bill) {
-        getBillsCollection(groupId).document(bill.id).set(bill).await()
+    override suspend fun deleteBill(groupId: String, bill: Bill) {
+        firestore.runTransaction { transaction ->
+            val billRef = getBillsCollection(groupId).document(bill.id)
+            val groupRef = firestore.collection("groups").document(groupId)
+            
+            transaction.delete(billRef)
+            transaction.update(groupRef, "recentActivity", FieldValue.arrayUnion("Deleted: ${bill.title}"))
+            
+            // Reverse the balances (multiplier -1.0)
+            updateBalances(transaction, groupId, bill, -1.0)
+            
+            null
+        }.await()
     }
 
-    override suspend fun settleUp(fromUserId: String, toUserId: String, amount: Double) {
+    private fun updateBalances(transaction: com.google.firebase.firestore.Transaction, groupId: String, bill: Bill, multiplier: Double) {
+        val groupRef = firestore.collection("groups").document(groupId)
+        
+        // Payer share
+        val payerShare = bill.participantsMap[bill.payerId] ?: 0.0
+        val amountToBeRepaid = (bill.amount - payerShare) * multiplier
+        
+        // Update Payer's balances
+        transaction.update(groupRef, "groupBalance.${bill.payerId}", FieldValue.increment(amountToBeRepaid))
+        val payerRef = firestore.collection("users").document(bill.payerId)
+        transaction.update(payerRef, "totalBalance", FieldValue.increment(amountToBeRepaid))
+
+        // Update Other Participants
+        bill.participantsMap.forEach { (userId, share) ->
+            if (userId != bill.payerId) {
+                val debt = -share * multiplier
+                transaction.update(groupRef, "groupBalance.$userId", FieldValue.increment(debt))
+                val userRef = firestore.collection("users").document(userId)
+                transaction.update(userRef, "totalBalance", FieldValue.increment(debt))
+            }
+        }
+    }
+
+    override suspend fun settleUp(groupId: String, fromUserId: String, toUserId: String, amount: Double) {
         firestore.runTransaction { transaction ->
             val fromUserRef = firestore.collection("users").document(fromUserId)
             val toUserRef = firestore.collection("users").document(toUserId)
+            val groupRef = firestore.collection("groups").document(groupId)
             
-            // FromUser (Payer) is paying back, so hide their debt (increase their totalBalance) 
-            // wait, if I owe money my totalBalance is NEGATIVE.
-            // If I pay ₹100, my totalBalance should increase by ₹100.
             transaction.update(fromUserRef, "totalBalance", FieldValue.increment(amount))
-            
-            // ToUser (Receiver) was getting money, so their totalBalance was POSITIVE.
-            // If they get paid ₹100, they are owed ₹100 LESS now.
             transaction.update(toUserRef, "totalBalance", FieldValue.increment(-amount))
+            
+            transaction.update(groupRef, "groupBalance.$fromUserId", FieldValue.increment(amount))
+            transaction.update(groupRef, "groupBalance.$toUserId", FieldValue.increment(-amount))
+            
+            val settlementBill = Bill(
+                title = "Settle Up",
+                amount = amount,
+                payerId = fromUserId,
+                participantsMap = mapOf(toUserId to amount),
+                splitType = "SETTLEMENT",
+                timestamp = System.currentTimeMillis()
+            )
+            val settlementRef = getBillsCollection(groupId).document()
+            transaction.set(settlementRef, settlementBill.copy(id = settlementRef.id))
             
             null
         }.await()

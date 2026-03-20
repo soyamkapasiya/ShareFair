@@ -67,7 +67,7 @@ fun MainDashboardScreen(
         TabItem("Home", Icons.Default.Home, "home"),
         TabItem("Bills", Icons.Default.List, "bills"),
         TabItem("Groups", Icons.Default.Groups, "groups"),
-        TabItem("Friends", Icons.Default.Person, "friends")
+        TabItem("Drafts", Icons.Default.Receipt, "drafts")
     )
 
     var currentRoute by remember { mutableStateOf("home") }
@@ -84,7 +84,7 @@ fun MainDashboardScreen(
 
     Scaffold(
         bottomBar = {
-            if (currentRoute in listOf("home", "bills", "groups", "friends")) {
+            if (currentRoute in listOf("home", "bills", "groups", "drafts")) {
                 NavigationBar {
                     tabs.forEach { tab ->
                         NavigationBarItem(
@@ -105,7 +105,7 @@ fun MainDashboardScreen(
             }
         },
         floatingActionButton = {
-            if (currentRoute in listOf("home", "bills", "groups", "friends")) {
+            if (currentRoute in listOf("home", "bills", "groups")) {
                 ExtendedFloatingActionButton(
                     onClick = { showGroupPicker = true },
                     containerColor = MaterialTheme.colorScheme.primary,
@@ -147,22 +147,33 @@ fun MainDashboardScreen(
                         onGroupClick = { group -> navController.navigate("group_details/${group.id}") }
                     )
                 }
-                composable("friends") {
-                    FriendsScreen(
-                        onAddFriendClick = { navController.navigate("add_friend") }
+                composable("drafts") {
+                    DraftsScreen(
+                        onBack = { navController.popBackStack() },
+                        onConvert = { draft ->
+                            showGroupPicker = true
+                        }
                     )
                 }
-                composable("add_friend") { AddFriendScreen(onBack = { navController.popBackStack() }) }
                 composable("create_group") { CreateGroupScreen(onBack = { navController.popBackStack() }) }
                 composable(
                     "group_details/{groupId}",
                     arguments = listOf(navArgument("groupId") { type = NavType.StringType })
                 ) { entry ->
+                    val gid = entry.arguments?.getString("groupId") ?: ""
                     GroupDetailsScreen(
-                        groupId = entry.arguments?.getString("groupId") ?: "",
+                        groupId = gid,
                         onBack = { navController.popBackStack() },
-                        onAddExpenseClick = { id -> navController.navigate("add_bill/$id") }
+                        onAddExpenseClick = { id -> navController.navigate("add_bill/$id") },
+                        onChatClick = { id -> navController.navigate("group_chat/$id") }
                     )
+                }
+                composable(
+                    "group_chat/{groupId}",
+                    arguments = listOf(navArgument("groupId") { type = NavType.StringType })
+                ) { entry ->
+                    val gid = entry.arguments?.getString("groupId") ?: ""
+                    GroupChatScreen(groupId = gid, onBack = { navController.popBackStack() })
                 }
                 composable(
                     "add_bill/{groupId}",

@@ -69,6 +69,7 @@ fun GroupsScreen(
 
             Box(modifier = Modifier.weight(1f)) {
                 when (val state = uiState) {
+                    GroupsUiState.Idle -> { }
                     is GroupsUiState.Loading -> {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     }

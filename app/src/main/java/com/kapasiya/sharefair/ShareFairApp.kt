@@ -17,5 +17,20 @@ class ShareFairApp : Application() {
             .setPersistenceEnabled(true)
             .build()
         FirebaseFirestore.getInstance().firestoreSettings = settings
+        
+        // Schedule Recurring Bill Worker (once per day)
+        scheduleRecurringBillWorker()
+    }
+
+    private fun scheduleRecurringBillWorker() {
+        val workRequest = androidx.work.PeriodicWorkRequestBuilder<com.kapasiya.sharefair.work.RecurringBillWorker>(
+            24, java.util.concurrent.TimeUnit.HOURS
+        ).build()
+        
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "RecurringBills",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
     }
 }

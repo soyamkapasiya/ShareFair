@@ -9,7 +9,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -130,8 +130,38 @@ fun ProfileScreen(
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
                     SettingItem("My Account", Icons.Default.AccountCircle)
-                    SettingItem("My Groups", Icons.Default.Groups)
+                    SettingItem("Spending Analytics", Icons.Default.Analytics) {
+                        // Navigate to SummaryScreen
+                    }
                     SettingItem("Payment Methods", Icons.Default.Payment)
+                    
+                    var fingerprintEnabled by remember { mutableStateOf(false) }
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Surface(
+                            modifier = Modifier.size(40.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            color = MaterialTheme.colorScheme.surface
+                        ) {
+                            Icon(
+                                Icons.Default.Fingerprint,
+                                contentDescription = null,
+                                modifier = Modifier.padding(10.dp),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Text("Fingerprint Lock", fontWeight = FontWeight.Medium, modifier = Modifier.weight(1f))
+                        Switch(
+                            checked = fingerprintEnabled,
+                            onCheckedChange = { fingerprintEnabled = it }
+                        )
+                    }
+                    
                     SettingItem("Privacy & Security", Icons.Default.Lock)
                     SettingItem("Settings", Icons.Default.Settings)
                 }
@@ -159,11 +189,11 @@ fun ProfileScreen(
 }
 
 @Composable
-fun SettingItem(title: String, icon: ImageVector) {
+fun SettingItem(title: String, icon: ImageVector, onClick: () -> Unit = {}) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { }
+            .clickable { onClick() }
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

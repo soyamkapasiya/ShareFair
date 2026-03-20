@@ -1,5 +1,8 @@
 package com.kapasiya.sharefair.ui.screens
 
+import android.content.Intent
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
@@ -10,6 +13,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Celebration
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.CurrencyRupee
+import androidx.compose.material.icons.filled.Payments
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,6 +21,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -35,6 +40,7 @@ fun SettleUpScreen(
     viewModel: BillViewModel = viewModel()
 ) {
     var isSettled by remember { mutableStateOf(false) }
+    val context = LocalContext.current
     
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -49,10 +55,16 @@ fun SettleUpScreen(
         ) {
             if (!isSettled) {
                 Text(
-                    "Settle Up",
+                    "Settlement Dashboard",
                     fontSize = 28.sp,
                     fontWeight = FontWeight.Bold,
                     color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    "Clutter-free breakdown of your debt",
+                    fontSize = 14.sp,
+                    color = Color.Gray,
+                    modifier = Modifier.padding(top = 4.dp)
                 )
                 
                 Spacer(modifier = Modifier.height(48.dp))
@@ -83,7 +95,7 @@ fun SettleUpScreen(
                         
                         Spacer(modifier = Modifier.height(24.dp))
                         
-                        Text("You are paying", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text("Amount Owed", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         Text(
                             "₹$amount", 
                             fontSize = 42.sp, 
@@ -100,10 +112,23 @@ fun SettleUpScreen(
                 
                 Spacer(modifier = Modifier.height(64.dp))
                 
+                // One-tap "Settle" button with UPI integration
                 Button(
                     onClick = {
-                        viewModel.settleUp(friendId, amount) {
-                            isSettled = true
+                        // UPI Integration Mock
+                        val upiUri = Uri.parse("upi://pay?pa=friend@upi&pn=$friendName&am=$amount&cu=INR")
+                        val intent = Intent(Intent.ACTION_VIEW, upiUri)
+                        try {
+                            context.startActivity(intent)
+                            // After returning from UPI app, mark as settled
+                            viewModel.settleUp(friendId, amount) {
+                                isSettled = true
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(context, "No UPI app found. Marking as paid manually.", Toast.LENGTH_SHORT).show()
+                            viewModel.settleUp(friendId, amount) {
+                                isSettled = true
+                            }
                         }
                     },
                     modifier = Modifier
@@ -112,8 +137,10 @@ fun SettleUpScreen(
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     shape = RoundedCornerShape(20.dp)
                 ) {
+                    Icon(Icons.Default.Payments, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
                     Text(
-                        "Confirm Payment", 
+                        "Settle via UPI",
                         color = MaterialTheme.colorScheme.onPrimary, 
                         fontWeight = FontWeight.Bold, 
                         fontSize = 18.sp

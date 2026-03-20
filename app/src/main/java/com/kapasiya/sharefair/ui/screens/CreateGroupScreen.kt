@@ -10,6 +10,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -37,6 +38,8 @@ fun CreateGroupScreen(
 ) {
     var groupName by remember { mutableStateOf("") }
     var selectedCategory by remember { mutableStateOf("General") }
+    var groupType by remember { mutableStateOf("GROUP") } // GROUP or PERSONAL
+    var simplifyBalances by remember { mutableStateOf(true) }
     val selectedMembers = remember { mutableStateListOf<String>() }
     val context = LocalContext.current
     val friendsState by friendsViewModel.uiState.collectAsState()
@@ -46,17 +49,12 @@ fun CreateGroupScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Create Group", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground) },
+                title = { Text("Create Group", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(
-                            painterResource(android.R.drawable.ic_menu_revert), 
-                            contentDescription = "back",
-                            tint = MaterialTheme.colorScheme.onBackground
-                        )
+                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "back")
                     }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(containerColor = MaterialTheme.colorScheme.background)
+                }
             )
         }
     ) { padding ->
@@ -70,8 +68,7 @@ fun CreateGroupScreen(
             Text(
                 "Group Details", 
                 fontWeight = FontWeight.SemiBold, 
-                fontSize = 20.sp, 
-                color = MaterialTheme.colorScheme.onBackground
+                fontSize = 20.sp
             )
             Spacer(modifier = Modifier.height(16.dp))
 
@@ -80,17 +77,41 @@ fun CreateGroupScreen(
                 onValueChange = { groupName = it },
                 label = { Text("Group Name") },
                 modifier = Modifier.fillMaxWidth(),
-                shape = RoundedCornerShape(12.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = MaterialTheme.colorScheme.primary,
-                    unfocusedBorderColor = MaterialTheme.colorScheme.outlineVariant,
-                    focusedLabelColor = MaterialTheme.colorScheme.primary,
-                )
+                shape = RoundedCornerShape(12.dp)
             )
 
-            Spacer(modifier = Modifier.height(24.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
-            Text("Category", fontWeight = FontWeight.Medium, color = MaterialTheme.colorScheme.onBackground)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text("Group Type:", fontWeight = FontWeight.Medium)
+                Spacer(modifier = Modifier.width(16.dp))
+                FilterChip(
+                    selected = groupType == "GROUP",
+                    onClick = { groupType = "GROUP" },
+                    label = { Text("Shared") }
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                FilterChip(
+                    selected = groupType == "PERSONAL",
+                    onClick = { groupType = "PERSONAL" },
+                    label = { Text("Personal") }
+                )
+            }
+
+            if (groupType == "GROUP") {
+                Spacer(modifier = Modifier.height(16.dp))
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Checkbox(
+                        checked = simplifyBalances,
+                        onCheckedChange = { simplifyBalances = it }
+                    )
+                    Text("Simplify Balances", fontSize = 14.sp)
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("Category", fontWeight = FontWeight.Medium)
             
             LazyRow(
                 modifier = Modifier
@@ -102,53 +123,54 @@ fun CreateGroupScreen(
                     FilterChip(
                         selected = selectedCategory == category,
                         onClick = { selectedCategory = category },
-                        label = { Text(category) },
-                        colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = MaterialTheme.colorScheme.primary,
-                            selectedLabelColor = MaterialTheme.colorScheme.onPrimary
-                        )
+                        label = { Text(category) }
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(24.dp))
+            if (groupType == "GROUP") {
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                    "Select Members", 
+                    fontWeight = FontWeight.SemiBold, 
+                    fontSize = 20.sp
+                )
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Text(
-                "Select Members", 
-                fontWeight = FontWeight.SemiBold, 
-                fontSize = 20.sp, 
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            when (val state = friendsState) {
-                is FriendsUiState.Loading -> CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
-                is FriendsUiState.Error -> Text(state.message, color = MaterialTheme.colorScheme.error)
-                is FriendsUiState.Success -> {
-                    LazyColumn(modifier = Modifier.weight(1f)) {
-                        items(state.friends) { friend ->
-                            MemberSelectionItem(
-                                friend = friend,
-                                isSelected = selectedMembers.contains(friend.id),
-                                onToggle = {
-                                    if (selectedMembers.contains(friend.id)) {
-                                        selectedMembers.remove(friend.id)
-                                    } else {
-                                        selectedMembers.add(friend.id)
+                when (val state = friendsState) {
+                    is FriendsUiState.Loading -> CircularProgressIndicator()
+                    is FriendsUiState.Error -> Text(state.message, color = MaterialTheme.colorScheme.error)
+                    is FriendsUiState.Success -> {
+                        LazyColumn(modifier = Modifier.weight(1f)) {
+                            items(state.friends) { friend ->
+                                MemberSelectionItem(
+                                    friend = friend,
+                                    isSelected = selectedMembers.contains(friend.id),
+                                    onToggle = {
+                                        if (selectedMembers.contains(friend.id)) {
+                                            selectedMembers.remove(friend.id)
+                                        } else {
+                                            selectedMembers.add(friend.id)
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
                     }
                 }
+            } else {
+                Spacer(modifier = Modifier.weight(1f))
             }
-
-            Spacer(modifier = Modifier.height(24.dp))
 
             Button(
                 onClick = {
                     if (groupName.isNotEmpty()) {
-                        groupsViewModel.createGroup(groupName, selectedMembers.toList()) { success, message ->
+                        groupsViewModel.createGroup(
+                            name = groupName, 
+                            members = selectedMembers.toList(),
+                            type = groupType,
+                            simplifyBalances = simplifyBalances
+                        ) { success, message ->
                             Toast.makeText(context, message, Toast.LENGTH_SHORT).show()
                             if (success) onBack()
                         }
@@ -159,15 +181,9 @@ fun CreateGroupScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(56.dp),
-                shape = RoundedCornerShape(12.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                shape = RoundedCornerShape(12.dp)
             ) {
-                Text(
-                    "Create Now", 
-                    fontSize = 16.sp, 
-                    fontWeight = FontWeight.SemiBold, 
-                    color = MaterialTheme.colorScheme.onPrimary
-                )
+                Text("Create Group", fontSize = 16.sp, fontWeight = FontWeight.SemiBold)
             }
         }
     }
@@ -182,25 +198,23 @@ fun MemberSelectionItem(friend: User, isSelected: Boolean, onToggle: () -> Unit)
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-            contentAlignment = Alignment.Center
+        Surface(
+            modifier = Modifier.size(40.dp),
+            shape = CircleShape,
+            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
         ) {
-            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+            Box(contentAlignment = Alignment.Center) {
+                Text(friend.name.take(1).uppercase())
+            }
         }
         Spacer(modifier = Modifier.width(16.dp))
         Text(
             friend.name, 
-            modifier = Modifier.weight(1f), 
-            color = MaterialTheme.colorScheme.onBackground
+            modifier = Modifier.weight(1f)
         )
         Checkbox(
             checked = isSelected, 
-            onCheckedChange = { onToggle() },
-            colors = CheckboxDefaults.colors(checkedColor = MaterialTheme.colorScheme.primary)
+            onCheckedChange = { onToggle() }
         )
     }
 }

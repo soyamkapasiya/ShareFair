@@ -3,13 +3,13 @@ package com.kapasiya.sharefair.ui.screens
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.FilterList
-import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -28,11 +28,21 @@ import com.kapasiya.sharefair.ui.viewmodel.BillViewModel
 @Composable
 fun BillsScreen(viewModel: BillViewModel = viewModel()) {
     var searchQuery by remember { mutableStateOf("") }
+    var isListView by remember { mutableStateOf(true) }
+    var selectedFilter by remember { mutableStateOf("All") }
     val bills by viewModel.allBills.collectAsState()
     
-    val filteredBills = remember(searchQuery, bills) {
-        if (searchQuery.isEmpty()) bills
+    val filteredBills = remember(searchQuery, bills, selectedFilter) {
+        val base = if (searchQuery.isEmpty()) bills
         else bills.filter { it.title.contains(searchQuery, ignoreCase = true) }
+        
+        when (selectedFilter) {
+            "All" -> base
+            "Settled" -> base.filter { it.splitType == "SETTLEMENT" }
+            "Expenses" -> base.filter { it.splitType != "SETTLEMENT" }
+            "Itemized" -> base.filter { it.splitType == "ITEM_WISE" }
+            else -> base
+        }
     }
 
     Surface(
@@ -44,15 +54,28 @@ fun BillsScreen(viewModel: BillViewModel = viewModel()) {
                 .fillMaxSize()
                 .padding(16.dp)
         ) {
-            Text(
-                "Expense History",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 24.dp)
-            )
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    "Expense History",
+                    style = MaterialTheme.typography.headlineMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                
+                // Toggle between List and Tile View
+                IconButton(onClick = { isListView = !isListView }) {
+                    Icon(
+                        imageVector = if (isListView) Icons.Default.GridView else Icons.Default.ViewList,
+                        contentDescription = "Toggle View"
+                    )
+                }
+            }
             
-            // Search Bar
+            // Search Bar & Filter System
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
@@ -67,9 +90,26 @@ fun BillsScreen(viewModel: BillViewModel = viewModel()) {
                 shape = RoundedCornerShape(20.dp)
             )
             
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            // Advanced Filters
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                listOf("All", "Expenses", "Settled", "Itemized").forEach { filter ->
+                    FilterChip(
+                        selected = selectedFilter == filter,
+                        onClick = { selectedFilter = filter },
+                        label = { Text(filter) },
+                        shape = RoundedCornerShape(20.dp)
+                    )
+                }
+            }
+
             Spacer(modifier = Modifier.height(24.dp))
             
-            // Transaction List
+            // Flexible List and Tile Views
             if (filteredBills.isEmpty()) {
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
@@ -78,12 +118,24 @@ fun BillsScreen(viewModel: BillViewModel = viewModel()) {
                     )
                 }
             } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    items(filteredBills) { bill ->
-                        HistoryItem(bill)
+                if (isListView) {
+                    LazyColumn(
+                        modifier = Modifier.fillMaxSize(),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(filteredBills) { bill ->
+                            HistoryItem(bill, isListView = true)
+                        }
+                    }
+                } else {
+                    LazyVerticalGrid(
+                        columns = GridCells.Fixed(2),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        items(filteredBills.size) { index ->
+                            HistoryItem(filteredBills[index], isListView = false)
+                        }
                     }
                 }
             }
@@ -92,7 +144,7 @@ fun BillsScreen(viewModel: BillViewModel = viewModel()) {
 }
 
 @Composable
-fun HistoryItem(bill: Bill) {
+fun HistoryItem(bill: Bill, isListView: Boolean) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(16.dp),
@@ -101,47 +153,93 @@ fun HistoryItem(bill: Bill) {
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .padding(16.dp)
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Box(
+        if (isListView) {
+            Row(
                 modifier = Modifier
-                    .size(48.dp)
-                    .clip(CircleShape)
-                    .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
-                contentAlignment = Alignment.Center
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Icon(
-                    Icons.Default.List, 
-                    contentDescription = null, 
-                    tint = MaterialTheme.colorScheme.primary
+                Box(
+                    modifier = Modifier
+                        .size(48.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.List, 
+                        contentDescription = null, 
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                }
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(
+                        bill.title,
+                        fontWeight = FontWeight.Bold,
+                        color = MaterialTheme.colorScheme.onSurface
+                    )
+                    Text(
+                        if (bill.splitType == "SETTLEMENT") "Settle Up" else "Shared Expense",
+                        fontSize = 12.sp,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                
+                Text(
+                    "₹${bill.amount}",
+                    fontWeight = FontWeight.Bold,
+                    color = if (bill.splitType == "SETTLEMENT") Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
+                    fontSize = 16.sp
                 )
             }
-            
-            Spacer(modifier = Modifier.width(16.dp))
-            
-            Column(modifier = Modifier.weight(1f)) {
+        } else {
+            Column(
+                modifier = Modifier.padding(16.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Default.ReceiptLong, 
+                        contentDescription = null, 
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
+                
+                Spacer(modifier = Modifier.height(12.dp))
+                
                 Text(
                     bill.title,
                     fontWeight = FontWeight.Bold,
-                    color = MaterialTheme.colorScheme.onSurface
+                    color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis
                 )
+                
                 Text(
-                    "Shared Expense",
-                    fontSize = 12.sp,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    "₹${bill.amount}",
+                    fontWeight = FontWeight.ExtraBold,
+                    color = if (bill.splitType == "SETTLEMENT") Color(0xFF4CAF50) else MaterialTheme.colorScheme.primary,
+                    fontSize = 14.sp
+                )
+                
+                Spacer(modifier = Modifier.height(4.dp))
+                
+                Text(
+                    "Today", // Mock date
+                    fontSize = 10.sp,
+                    color = Color.Gray
                 )
             }
-            
-            Text(
-                "₹${bill.amount}",
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.primary,
-                fontSize = 16.sp
-            )
         }
     }
 }

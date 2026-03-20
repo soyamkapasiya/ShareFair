@@ -24,6 +24,9 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.kapasiya.sharefair.ui.theme.ShareFairTheme
 import com.kapasiya.sharefair.ui.screens.SignUpScreen
+import com.kapasiya.sharefair.model.Group
+import com.kapasiya.sharefair.model.User
+import com.kapasiya.sharefair.data.RepositoryModule
 import kotlinx.coroutines.launch
 import java.security.MessageDigest
 import java.util.UUID
@@ -58,12 +61,15 @@ class SignUpActivity : ComponentActivity() {
         auth.createUserWithEmailAndPassword(emailText, passwordText)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    val user = auth.currentUser
-                    user?.let {
+                    val firebaseUser = auth.currentUser
+                    firebaseUser?.let {
                         val profileUpdates = UserProfileChangeRequest.Builder()
                             .setDisplayName(fullNameText)
                             .build()
                         it.updateProfile(profileUpdates)
+                        
+                        // Create user profile in DB immediately
+                        syncUserWithDatabase(it, fullNameText)
                         sendEmailVerification(it, emailText)
                     }
                 } else {
@@ -126,40 +132,49 @@ class SignUpActivity : ComponentActivity() {
                                     }
                                 } else {
                                     Log.e(TAG, "Firebase auth failed", task.exception)
-                                    Toast.makeText(this@SignUpActivity, "Google Sign-in failed at Firebase: ${task.exception?.message}", Toast.LENGTH_LONG).show()
+                                    Toast.makeText(this@SignUpActivity, "Google Sign-in failed", Toast.LENGTH_LONG).show()
                                 }
                             }
                     } catch (e: Exception) {
                         Log.e(TAG, "Google ID Token parsing failed", e)
-                        Toast.makeText(this@SignUpActivity, "Google Sign-in error: ${e.message}", Toast.LENGTH_LONG).show()
                     }
                 }
                 override fun onError(e: GetCredentialException) {
                     Log.e(TAG, "Auth failed: ${e.javaClass.simpleName}", e)
-                    val friendlyMessage = when(e) {
-                        is NoCredentialException -> "No Google accounts found. Please add an account to your device."
-                        else -> "Google Sign-in failed: ${e.message}"
-                    }
-                    Toast.makeText(this@SignUpActivity, friendlyMessage, Toast.LENGTH_LONG).show()
                 }
             }
         )
     }
 
-    private fun syncUserWithDatabase(firebaseUser: com.google.firebase.auth.FirebaseUser) {
-        val userRepo = com.kapasiya.sharefair.data.RepositoryModule.userRepository
+    private fun syncUserWithDatabase(firebaseUser: FirebaseUser, manualName: String? = null) {
+        val userRepo = RepositoryModule.userRepository
+        val groupRepo = RepositoryModule.groupRepository
+        
         lifecycleScope.launch {
             try {
                 val existingProfile = userRepo.getUserProfile(firebaseUser.uid)
-                val updatedProfile = com.kapasiya.sharefair.model.User(
-                    id = firebaseUser.uid,
-                    name = firebaseUser.displayName ?: existingProfile?.name ?: "User",
-                    email = firebaseUser.email ?: existingProfile?.email ?: "",
-                    profileImageUrl = firebaseUser.photoUrl?.toString() ?: existingProfile?.profileImageUrl ?: "",
-                    totalBalance = existingProfile?.totalBalance ?: 0.0,
-                    friends = existingProfile?.friends ?: emptyList()
-                )
-                userRepo.saveUserProfile(updatedProfile)
+                if (existingProfile == null) {
+                    val newProfile = User(
+                        id = firebaseUser.uid,
+                        name = manualName ?: firebaseUser.displayName ?: "User",
+                        email = firebaseUser.email ?: "",
+                        profileImageUrl = firebaseUser.photoUrl?.toString() ?: "",
+                        totalBalance = 0.0,
+                        friends = emptyList(),
+                        isPremium = false,
+                        groupLimit = 5
+                    )
+                    userRepo.saveUserProfile(newProfile)
+                    
+                    // Feature: Auto-create a "Personal" group for individual spending
+                    val personalGroup = Group(
+                        name = "My Expenses",
+                        members = listOf(firebaseUser.uid),
+                        type = "PERSONAL",
+                        recentActivity = listOf("Welcome to ShareFair! Track your personal spends here.")
+                    )
+                    groupRepo.createGroup(personalGroup)
+                }
                 navigateToMainActivity()
             } catch (e: Exception) {
                 Log.e(TAG, "Failed to sync user", e)

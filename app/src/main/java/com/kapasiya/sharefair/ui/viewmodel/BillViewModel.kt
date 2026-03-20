@@ -59,6 +59,7 @@ class BillViewModel : ViewModel() {
         amount: Double,
         splitType: String,
         participants: Map<String, Double>,
+        items: List<com.kapasiya.sharefair.model.BillItem> = emptyList(),
         onSuccess: () -> Unit
     ) {
         if (currentUserId.isEmpty()) return
@@ -72,6 +73,7 @@ class BillViewModel : ViewModel() {
                     payerId = currentUserId,
                     splitType = splitType,
                     participantsMap = participants,
+                    items = items,
                     timestamp = System.currentTimeMillis()
                 )
                 billRepository.addBill(groupId, bill)

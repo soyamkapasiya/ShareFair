@@ -25,6 +25,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -40,6 +41,7 @@ fun HomeScreen(
     onProfileClick: () -> Unit = {}
 ) {
     val stats by viewModel.stats.collectAsState()
+    var showChecklist by remember { mutableStateOf(true) }
 
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -54,6 +56,14 @@ fun HomeScreen(
             item {
                 HeaderSection(stats.userName, stats.profileImageUrl, onNotificationClick, onProfileClick)
             }
+            
+            // New User Checklist Feature
+            if (showChecklist) {
+                item {
+                    OnboardingChecklist(onDismiss = { showChecklist = false })
+                }
+            }
+
             item {
                 BalanceCard(stats.totalBalance, stats.owesYou, stats.youOwe)
             }
@@ -95,6 +105,63 @@ fun HomeScreen(
             } else {
                 items(stats.recentTransactions) { bill ->
                     TransactionItem(bill)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+fun OnboardingChecklist(onDismiss: () -> Unit) {
+    val tasks = remember {
+        mutableStateListOf(
+            "Create your first group" to false,
+            "Add a friend" to true,
+            "Enable SMS sync" to false,
+            "Try item-wise split" to false
+        )
+    }
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = RoundedCornerShape(20.dp),
+        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.3f))
+    ) {
+        Column(modifier = Modifier.padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column {
+                    Text("Getting Started", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+                    Text("Complete tasks to earn ShareFair Coins!", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                }
+                IconButton(onClick = onDismiss) {
+                    Icon(Icons.Default.Close, contentDescription = "Dismiss", modifier = Modifier.size(18.dp))
+                }
+            }
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            tasks.forEach { (task, completed) ->
+                Row(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Icon(
+                        imageVector = if (completed) Icons.Default.CheckCircle else Icons.Default.RadioButtonUnchecked,
+                        contentDescription = null,
+                        tint = if (completed) MaterialTheme.colorScheme.primary else Color.Gray,
+                        modifier = Modifier.size(20.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Text(
+                        task, 
+                        fontSize = 14.sp,
+                        textDecoration = if (completed) TextDecoration.LineThrough else null,
+                        color = if (completed) Color.Gray else MaterialTheme.colorScheme.onSurface
+                    )
                 }
             }
         }
