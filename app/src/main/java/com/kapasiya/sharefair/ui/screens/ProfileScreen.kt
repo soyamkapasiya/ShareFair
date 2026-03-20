@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.sp
 fun ProfileScreen(
     userName: String,
     userEmail: String,
+    profileImageUrl: String = "",
     onBack: () -> Unit,
     onSignOut: () -> Unit
 ) {
@@ -35,6 +36,11 @@ fun ProfileScreen(
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                    }
+                },
+                actions = {
+                    IconButton(onClick = { /* Handle Edit */ }) {
+                        Icon(Icons.Default.Edit, contentDescription = "Edit Profile", tint = MaterialTheme.colorScheme.primary)
                     }
                 }
             )
@@ -69,12 +75,21 @@ fun ProfileScreen(
                     shape = CircleShape,
                     color = MaterialTheme.colorScheme.surfaceVariant
                 ) {
-                    Icon(
-                        Icons.Default.Person,
-                        contentDescription = null,
-                        modifier = Modifier.padding(24.dp),
-                        tint = MaterialTheme.colorScheme.primary
-                    )
+                    if (profileImageUrl.isNotEmpty()) {
+                        coil.compose.AsyncImage(
+                            model = profileImageUrl,
+                            contentDescription = "Profile Picture",
+                            modifier = Modifier.fillMaxSize().clip(CircleShape),
+                            contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                        )
+                    } else {
+                        Icon(
+                            Icons.Default.Person,
+                            contentDescription = null,
+                            modifier = Modifier.padding(24.dp),
+                            tint = MaterialTheme.colorScheme.primary
+                        )
+                    }
                 }
             }
 
@@ -90,6 +105,18 @@ fun ProfileScreen(
                 style = MaterialTheme.typography.bodyLarge,
                 color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
             )
+            
+            Spacer(modifier = Modifier.height(12.dp))
+            
+            OutlinedButton(
+                onClick = { /* Handle Edit */ },
+                shape = RoundedCornerShape(12.dp),
+                modifier = Modifier.width(140.dp)
+            ) {
+                Icon(Icons.Default.Edit, contentDescription = null, modifier = Modifier.size(16.dp))
+                Spacer(modifier = Modifier.width(8.dp))
+                Text("Edit Profile", fontSize = 14.sp)
+            }
 
             Spacer(modifier = Modifier.height(40.dp))
 
@@ -102,10 +129,11 @@ fun ProfileScreen(
                 )
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
+                    SettingItem("My Account", Icons.Default.AccountCircle)
                     SettingItem("My Groups", Icons.Default.Groups)
                     SettingItem("Payment Methods", Icons.Default.Payment)
+                    SettingItem("Privacy & Security", Icons.Default.Lock)
                     SettingItem("Settings", Icons.Default.Settings)
-                    SettingItem("Help & Support", Icons.Default.Help)
                 }
             }
 

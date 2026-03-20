@@ -52,7 +52,7 @@ fun HomeScreen(
             verticalArrangement = Arrangement.spacedBy(20.dp)
         ) {
             item {
-                HeaderSection(stats.userName, onNotificationClick, onProfileClick)
+                HeaderSection(stats.userName, stats.profileImageUrl, onNotificationClick, onProfileClick)
             }
             item {
                 BalanceCard(stats.totalBalance, stats.owesYou, stats.youOwe)
@@ -102,33 +102,58 @@ fun HomeScreen(
 }
 
 @Composable
-fun HeaderSection(userName: String, onNotificationClick: () -> Unit, onProfileClick: () -> Unit) {
+fun HeaderSection(userName: String, profileImageUrl: String, onNotificationClick: () -> Unit, onProfileClick: () -> Unit) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Column(
-            modifier = Modifier.clickable { onProfileClick() }
+        Row(
+            modifier = Modifier.clickable { onProfileClick() },
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            Text(
-                "Hello, $userName!",
-                style = MaterialTheme.typography.headlineMedium,
-                fontWeight = FontWeight.Bold,
-                color = MaterialTheme.colorScheme.onBackground
-            )
-            Text(
-                "Welcome back to ShareFair",
-                style = MaterialTheme.typography.bodyMedium,
-                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
-            )
+            Surface(
+                modifier = Modifier.size(56.dp),
+                shape = CircleShape,
+                color = MaterialTheme.colorScheme.surfaceVariant
+            ) {
+                if (profileImageUrl.isNotEmpty()) {
+                    coil.compose.AsyncImage(
+                        model = profileImageUrl,
+                        contentDescription = "Profile",
+                        modifier = Modifier.fillMaxSize().clip(CircleShape),
+                        contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                    )
+                } else {
+                    Box(contentAlignment = Alignment.Center) {
+                        Text(userName.take(1).uppercase(), fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    }
+                }
+            }
+            
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Column {
+                Text(
+                    "Hello, $userName!",
+                    style = MaterialTheme.typography.titleLarge,
+                    fontWeight = FontWeight.Bold,
+                    color = MaterialTheme.colorScheme.onBackground
+                )
+                Text(
+                    "Welcome back to ShareFair",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+                )
+            }
         }
+        
         Surface(
             modifier = Modifier
                 .size(48.dp)
                 .clickable { onNotificationClick() },
             shape = CircleShape,
-            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f)
+            color = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)
         ) {
             Icon(
                 Icons.Default.Notifications,
@@ -205,7 +230,16 @@ fun QuickActionBubbles(friends: List<User>) {
                             .background(MaterialTheme.colorScheme.surfaceVariant),
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        if (friend.profileImageUrl.isNotEmpty()) {
+                            coil.compose.AsyncImage(
+                                model = friend.profileImageUrl,
+                                contentDescription = friend.name,
+                                modifier = Modifier.fillMaxSize().clip(CircleShape),
+                                contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                            )
+                        } else {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
                     }
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(

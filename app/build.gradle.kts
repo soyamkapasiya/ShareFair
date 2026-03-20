@@ -61,6 +61,7 @@ dependencies {
     // Navigation & Lifecycle
     implementation(libs.navigation.compose)
     implementation(libs.lifecycle.runtime.compose)
+    implementation(libs.lifecycle.runtime.ktx)
 
     // Animations
     implementation(libs.lottie.compose)
@@ -111,4 +112,7 @@ dependencies {
 
     // Splash Screen API
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    // Image Loading
+    implementation("io.coil-kt:coil-compose:2.6.0")
 }

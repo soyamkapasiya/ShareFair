@@ -11,6 +11,7 @@ import kotlinx.coroutines.launch
 
 data class DashboardStats(
     val userName: String = "User",
+    val profileImageUrl: String = "",
     val totalBalance: Double = 0.0,
     val youOwe: Double = 0.0,
     val owesYou: Double = 0.0,
@@ -41,6 +42,7 @@ class DashboardViewModel : ViewModel() {
                 user?.let { u ->
                     _stats.update { it.copy(
                         userName = u.name,
+                        profileImageUrl = u.profileImageUrl,
                         totalBalance = u.totalBalance,
                         owesYou = if (u.totalBalance > 0) u.totalBalance else 0.0,
                         youOwe = if (u.totalBalance < 0) -u.totalBalance else 0.0

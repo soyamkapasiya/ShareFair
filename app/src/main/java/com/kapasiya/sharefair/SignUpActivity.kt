@@ -13,6 +13,7 @@ import androidx.credentials.GetCredentialResponse
 import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.lifecycleScope
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.firebase.auth.FirebaseAuth
@@ -23,6 +24,7 @@ import com.google.firebase.auth.GoogleAuthProvider
 import com.google.firebase.auth.UserProfileChangeRequest
 import com.kapasiya.sharefair.ui.theme.ShareFairTheme
 import com.kapasiya.sharefair.ui.screens.SignUpScreen
+import kotlinx.coroutines.launch
 import java.security.MessageDigest
 import java.util.UUID
 
@@ -116,7 +118,12 @@ class SignUpActivity : ComponentActivity() {
                         auth.signInWithCredential(GoogleAuthProvider.getCredential(credential.idToken, null))
                             .addOnCompleteListener { task ->
                                 if (task.isSuccessful) {
-                                    navigateToMainActivity()
+                                    val firebaseUser = auth.currentUser
+                                    if (firebaseUser != null) {
+                                        syncUserWithDatabase(firebaseUser)
+                                    } else {
+                                        navigateToMainActivity()
+                                    }
                                 } else {
                                     Log.e(TAG, "Firebase auth failed", task.exception)
                                     Toast.makeText(this@SignUpActivity, "Google Sign-in failed at Firebase: ${task.exception?.message}", Toast.LENGTH_LONG).show()
@@ -137,6 +144,28 @@ class SignUpActivity : ComponentActivity() {
                 }
             }
         )
+    }
+
+    private fun syncUserWithDatabase(firebaseUser: com.google.firebase.auth.FirebaseUser) {
+        val userRepo = com.kapasiya.sharefair.data.RepositoryModule.userRepository
+        lifecycleScope.launch {
+            try {
+                val existingProfile = userRepo.getUserProfile(firebaseUser.uid)
+                val updatedProfile = com.kapasiya.sharefair.model.User(
+                    id = firebaseUser.uid,
+                    name = firebaseUser.displayName ?: existingProfile?.name ?: "User",
+                    email = firebaseUser.email ?: existingProfile?.email ?: "",
+                    profileImageUrl = firebaseUser.photoUrl?.toString() ?: existingProfile?.profileImageUrl ?: "",
+                    totalBalance = existingProfile?.totalBalance ?: 0.0,
+                    friends = existingProfile?.friends ?: emptyList()
+                )
+                userRepo.saveUserProfile(updatedProfile)
+                navigateToMainActivity()
+            } catch (e: Exception) {
+                Log.e(TAG, "Failed to sync user", e)
+                navigateToMainActivity()
+            }
+        }
     }
 
     private fun navigateToMainActivity() {
