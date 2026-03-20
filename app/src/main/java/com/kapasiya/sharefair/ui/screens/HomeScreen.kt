@@ -67,6 +67,28 @@ fun HomeScreen(
             item {
                 BalanceCard(stats.totalBalance, stats.owesYou, stats.youOwe)
             }
+
+            // Real-time Personal Tracking Card
+            item {
+                Card(
+                    modifier = Modifier.fillMaxWidth().height(100.dp),
+                    shape = RoundedCornerShape(24.dp),
+                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer.copy(alpha = 0.5f))
+                ) {
+                    Row(modifier = Modifier.padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Surface(modifier = Modifier.size(48.dp), shape = CircleShape, color = MaterialTheme.colorScheme.secondary) {
+                            Icon(Icons.Default.Person, contentDescription = null, tint = Color.White, modifier = Modifier.padding(12.dp))
+                        }
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text("Personal Tracking", fontWeight = FontWeight.Bold)
+                            Text("Track your individual spendings", fontSize = 12.sp, color = Color.Gray)
+                        }
+                        Text("₹${stats.youOwe * 0.5}", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.secondary)
+                    }
+                }
+            }
+
             item {
                 QuickActionBubbles(stats.friends)
             }

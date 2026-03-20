@@ -67,6 +67,72 @@ fun GroupsScreen(
                 }
             }
 
+            // Splitwise Import Banner
+            Card(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 12.dp)
+                    .clickable { /* Simulate Import */ },
+                shape = RoundedCornerShape(16.dp),
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondary.copy(alpha = 0.1f)),
+                border = androidx.compose.foundation.BorderStroke(1.dp, MaterialTheme.colorScheme.secondary.copy(alpha = 0.3f))
+            ) {
+                Row(modifier = Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                    Icon(androidx.compose.material.icons.filled.Sync, contentDescription = null, tint = MaterialTheme.colorScheme.secondary)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text("Import from Splitwise", fontWeight = FontWeight.Bold, fontSize = 14.sp)
+                        Text("Switch to ShareFair with one tap!", fontSize = 12.sp, color = Color.Gray)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Collections Section (Trips, Events)
+            Text("Collections", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Text("Goa Trip, Roommate Bills, etc.", fontSize = 12.sp, color = Color.Gray)
+            
+            androidx.compose.foundation.lazy.LazyRow(
+                modifier = Modifier.padding(vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                items(3) { index ->
+                    Card(
+                        modifier = Modifier.width(160.dp),
+                        shape = RoundedCornerShape(20.dp),
+                        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer.copy(alpha = 0.5f))
+                    ) {
+                        Column(modifier = Modifier.padding(16.dp)) {
+                            Icon(androidx.compose.material.icons.filled.CardTravel, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
+                            Spacer(modifier = Modifier.height(16.dp))
+                            Text(if (index == 0) "Goa Trip 🏖️" else if (index == 1) "Flat Rent" else "Office party", fontWeight = FontWeight.Bold)
+                            Text("₹${(index + 1) * 5000}", fontSize = 12.sp, color = MaterialTheme.colorScheme.primary)
+                        }
+                    }
+                }
+                item {
+                    Column(
+                        modifier = Modifier
+                            .width(80.dp)
+                            .height(115.dp)
+                            .clip(RoundedCornerShape(20.dp))
+                            .background(MaterialTheme.colorScheme.surfaceVariant)
+                            .clickable { /* Add Collection */ },
+                        verticalArrangement = Arrangement.Center,
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Icon(androidx.compose.material.icons.filled.Add, contentDescription = null)
+                        Text("Add", fontSize = 12.sp)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Text("All Groups", fontWeight = FontWeight.Bold, fontSize = 18.sp)
+            Spacer(modifier = Modifier.height(8.dp))
+
             Box(modifier = Modifier.weight(1f)) {
                 when (val state = uiState) {
                     GroupsUiState.Idle -> { }
@@ -84,7 +150,14 @@ fun GroupsScreen(
                         if (state.groups.isEmpty()) {
                             EmptyGroupsView()
                         } else {
-                            GroupList(state.groups, onGroupClick)
+                            LazyColumn(
+                                modifier = Modifier.fillMaxSize(),
+                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                            ) {
+                                items(state.groups) { group ->
+                                    GroupItem(group, onGroupClick)
+                                }
+                            }
                         }
                     }
                 }

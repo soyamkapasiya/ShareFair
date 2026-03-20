@@ -31,15 +31,11 @@ import com.kapasiya.sharefair.ui.viewmodel.MonthlySpend
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun SummaryScreen(onBack: () -> Unit) {
-    val monthlySpends = listOf(
-        MonthlySpend("Jan", 1200.0),
-        MonthlySpend("Feb", 850.0),
-        MonthlySpend("Mar", 1500.0),
-        MonthlySpend("Apr", 900.0),
-        MonthlySpend("May", 1100.0),
-        MonthlySpend("Jun", 1300.0)
-    )
+fun SummaryScreen(
+    onBack: () -> Unit,
+    viewModel: com.kapasiya.sharefair.ui.viewmodel.SummaryViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
+    val uiState by viewModel.uiState.collectAsState()
 
     Scaffold(
         topBar = {
@@ -58,36 +54,51 @@ fun SummaryScreen(onBack: () -> Unit) {
             )
         }
     ) { padding ->
-        LazyColumn(
+        Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
-                .padding(horizontal = 20.dp),
-            verticalArrangement = Arrangement.spacedBy(24.dp)
         ) {
-            item {
-                Spacer(modifier = Modifier.height(10.dp))
-                TotalExpenseCard()
-            }
+            when (val state = uiState) {
+                is com.kapasiya.sharefair.ui.viewmodel.SummaryUiState.Loading -> {
+                    CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
+                }
+                is com.kapasiya.sharefair.ui.viewmodel.SummaryUiState.Error -> {
+                    Text(state.message, modifier = Modifier.align(Alignment.Center), color = MaterialTheme.colorScheme.error)
+                }
+                is com.kapasiya.sharefair.ui.viewmodel.SummaryUiState.Success -> {
+                    LazyColumn(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(horizontal = 20.dp),
+                        verticalArrangement = Arrangement.spacedBy(24.dp)
+                    ) {
+                        item {
+                            Spacer(modifier = Modifier.height(10.dp))
+                            TotalExpenseCard(state.totalSpent)
+                        }
 
-            item {
-                SpendingChartSection(monthlySpends)
-            }
+                        item {
+                            SpendingChartSection(state.monthlySpends)
+                        }
 
-            item {
-                CategoryBreakdownSection()
-            }
+                        item {
+                            CategoryBreakdownSection(state.categorySpends)
+                        }
 
-            item {
-                RecentInsightsSection()
-                Spacer(modifier = Modifier.height(20.dp))
+                        item {
+                            RecentInsightsSection()
+                            Spacer(modifier = Modifier.height(20.dp))
+                        }
+                    }
+                }
             }
         }
     }
 }
 
 @Composable
-fun TotalExpenseCard() {
+fun TotalExpenseCard(totalSpent: Double) {
     Card(
         modifier = Modifier.fillMaxWidth(),
         shape = RoundedCornerShape(28.dp),
@@ -100,7 +111,7 @@ fun TotalExpenseCard() {
             Text("Total Spending", color = MaterialTheme.colorScheme.onPrimary.copy(alpha = 0.8f))
             Spacer(modifier = Modifier.height(8.dp))
             Text(
-                "$2,450.00",
+                "₹${String.format("%.2f", totalSpent)}",
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.ExtraBold,
                 color = MaterialTheme.colorScheme.onPrimary
@@ -182,33 +193,38 @@ fun BarChart(spends: List<MonthlySpend>) {
 }
 
 @Composable
-fun CategoryBreakdownSection() {
+fun CategoryBreakdownSection(categorySpends: List<com.kapasiya.sharefair.ui.viewmodel.CategorySpend>) {
+    val total = categorySpends.sumOf { it.amount }
     Column {
         Text("Top Categories", style = MaterialTheme.typography.titleLarge, fontWeight = FontWeight.Bold)
         Spacer(modifier = Modifier.height(16.dp))
         
-        val categories = listOf(
-            CategoryItem("Food & Drinks", 45, MaterialTheme.colorScheme.primary),
-            CategoryItem("Shopping", 25, MaterialTheme.colorScheme.secondary),
-            CategoryItem("Transport", 20, MaterialTheme.colorScheme.tertiary),
-            CategoryItem("Others", 10, Color.Gray)
+        val colors = listOf(
+            MaterialTheme.colorScheme.primary,
+            MaterialTheme.colorScheme.secondary,
+            MaterialTheme.colorScheme.tertiary,
+            Color.Gray,
+            Color.LightGray
         )
         
-        categories.forEach { category ->
+        categorySpends.forEachIndexed { index, category ->
+            val percentage = if (total > 0) (category.amount / total * 100).toInt() else 0
+            val color = colors[index % colors.size]
+            
             Row(
                 modifier = Modifier.padding(vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(category.color))
+                Box(modifier = Modifier.size(12.dp).clip(CircleShape).background(color))
                 Spacer(modifier = Modifier.width(12.dp))
-                Text(category.name, modifier = Modifier.weight(1f))
-                Text("${category.percentage}%", fontWeight = FontWeight.Bold)
+                Text(category.category, modifier = Modifier.weight(1f))
+                Text("$percentage%", fontWeight = FontWeight.Bold)
             }
             LinearProgressIndicator(
-                progress = { category.percentage / 100f },
+                progress = { percentage / 100f },
                 modifier = Modifier.fillMaxWidth().height(8.dp).clip(RoundedCornerShape(4.dp)),
-                color = category.color,
-                trackColor = category.color.copy(alpha = 0.1f)
+                color = color,
+                trackColor = color.copy(alpha = 0.1f)
             )
         }
     }

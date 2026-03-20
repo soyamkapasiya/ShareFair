@@ -20,6 +20,9 @@ class ShareFairApp : Application() {
         
         // Schedule Recurring Bill Worker (once per day)
         scheduleRecurringBillWorker()
+        
+        // Schedule Smart Reminders (once per day)
+        scheduleSmartReminders()
     }
 
     private fun scheduleRecurringBillWorker() {
@@ -29,6 +32,18 @@ class ShareFairApp : Application() {
         
         androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
             "RecurringBills",
+            androidx.work.ExistingPeriodicWorkPolicy.KEEP,
+            workRequest
+        )
+    }
+
+    private fun scheduleSmartReminders() {
+        val workRequest = androidx.work.PeriodicWorkRequestBuilder<com.kapasiya.sharefair.work.ReminderWorker>(
+            24, java.util.concurrent.TimeUnit.HOURS
+        ).build()
+        
+        androidx.work.WorkManager.getInstance(this).enqueueUniquePeriodicWork(
+            "SmartReminders",
             androidx.work.ExistingPeriodicWorkPolicy.KEEP,
             workRequest
         )

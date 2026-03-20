@@ -48,10 +48,18 @@ class DashboardViewModel : ViewModel() {
                         youOwe = if (u.totalBalance < 0) -u.totalBalance else 0.0
                     ) }
                     
-                    // Also fetch friends
+                    // Also fetch friends and recent transactions
                     if (u.friends.isNotEmpty()) {
                         userRepository.getFriends(u.friends).collect { friendsList ->
                             _stats.update { it.copy(friends = friendsList) }
+                        }
+                    }
+                    
+                    if (u.groups.isNotEmpty()) {
+                        combine(u.groups.map { billRepository.getBillsForGroupFlow(it) }) { billsLists ->
+                            billsLists.flatMap { it }.sortedByDescending { it.timestamp }.take(5)
+                        }.collect { recentBills ->
+                            _stats.update { it.copy(recentTransactions = recentBills) }
                         }
                     }
                 }

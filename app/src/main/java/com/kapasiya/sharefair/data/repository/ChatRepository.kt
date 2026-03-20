@@ -1,11 +1,13 @@
 package com.kapasiya.sharefair.data.repository
 
-import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.Query
-import com.google.firebase.firestore.snapshots
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.ValueEventListener
 import com.kapasiya.sharefair.model.Message
+import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
 interface ChatRepository {
@@ -14,21 +16,36 @@ interface ChatRepository {
 }
 
 class ChatRepositoryImpl(
-    private val firestore: FirebaseFirestore
+    private val database: FirebaseDatabase
 ) : ChatRepository {
 
-    private fun getChatCollection(groupId: String) = 
-        firestore.collection("groups").document(groupId).collection("chats")
+    private fun getChatRef(groupId: String) = 
+        database.getReference("chats").child(groupId)
 
-    override fun getMessagesForGroup(groupId: String): Flow<List<Message>> {
-        return getChatCollection(groupId)
-            .orderBy("timestamp", Query.Direction.ASCENDING)
-            .snapshots()
-            .map { it.toObjects(Message::class.java) }
+    override fun getMessagesForGroup(groupId: String): Flow<List<Message>> = callbackFlow {
+        val listener = object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                val messages = mutableListOf<Message>()
+                for (child in snapshot.children) {
+                    val msg = child.getValue(Message::class.java)
+                    if (msg != null) messages.add(msg)
+                }
+                trySend(messages.sortedBy { it.timestamp })
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                close(error.toException())
+            }
+        }
+        
+        val ref = getChatRef(groupId)
+        ref.addValueEventListener(listener)
+        awaitClose { ref.removeEventListener(listener) }
     }
 
     override suspend fun sendMessage(groupId: String, message: Message) {
-        val doc = getChatCollection(groupId).document()
-        getChatCollection(groupId).document(doc.id).set(message.copy(id = doc.id)).await()
+        val ref = getChatRef(groupId).push()
+        val key = ref.key ?: return
+        ref.setValue(message.copy(id = key)).await()
     }
 }

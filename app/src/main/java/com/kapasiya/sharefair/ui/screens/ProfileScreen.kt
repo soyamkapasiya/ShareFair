@@ -27,7 +27,8 @@ fun ProfileScreen(
     userEmail: String,
     profileImageUrl: String = "",
     onBack: () -> Unit,
-    onSignOut: () -> Unit
+    onSignOut: () -> Unit,
+    onNavigateAnalytics: () -> Unit = {}
 ) {
     Scaffold(
         topBar = {
@@ -130,8 +131,8 @@ fun ProfileScreen(
             ) {
                 Column(modifier = Modifier.padding(8.dp)) {
                     SettingItem("My Account", Icons.Default.AccountCircle)
-                    SettingItem("Spending Analytics", Icons.Default.Analytics) {
-                        // Navigate to SummaryScreen
+                    SettingItem("Spending Analytics", Icons.Default.BarChart) {
+                        onNavigateAnalytics()
                     }
                     SettingItem("Payment Methods", Icons.Default.Payment)
                     
@@ -167,7 +168,40 @@ fun ProfileScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.weight(1f))
+            Spacer(modifier = Modifier.height(24.dp))
+
+            // Linked Accounts Section
+            Text(
+                "Linked Accounts (Auto-Fetch)", 
+                modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp),
+                fontSize = 14.sp, 
+                fontWeight = FontWeight.Bold,
+                color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f)
+            )
+            
+            Spacer(modifier = Modifier.height(8.dp))
+            
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                val services = listOf("Zomato" to Color(0xFFCB202D), "Swiggy" to Color(0xFFFC8019), "Zepto" to Color(0xFF5E2B97))
+                services.forEach { (name, color) ->
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Surface(
+                            modifier = Modifier.size(50.dp),
+                            shape = CircleShape,
+                            color = color.copy(alpha = 0.1f),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, color.copy(alpha = 0.3f))
+                        ) {
+                            Icon(Icons.Default.CloudQueue, contentDescription = null, tint = color, modifier = Modifier.padding(12.dp))
+                        }
+                        Text(name, fontSize = 10.sp, color = color, fontWeight = FontWeight.Bold)
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(40.dp))
 
             Button(
                 onClick = onSignOut,

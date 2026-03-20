@@ -1,6 +1,7 @@
 package com.kapasiya.sharefair.data
 
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.database.FirebaseDatabase
 import com.kapasiya.sharefair.data.repository.*
 
 /**
@@ -9,6 +10,10 @@ import com.kapasiya.sharefair.data.repository.*
 object RepositoryModule {
     private val firestore: FirebaseFirestore by lazy {
         FirebaseFirestore.getInstance()
+    }
+
+    private val realtimeDb: FirebaseDatabase by lazy {
+        FirebaseDatabase.getInstance()
     }
 
     val userRepository: UserRepository by lazy {
@@ -32,7 +37,7 @@ object RepositoryModule {
     }
 
     val chatRepository: ChatRepository by lazy {
-        ChatRepositoryImpl(firestore)
+        ChatRepositoryImpl(realtimeDb)
     }
 
     val collectionRepository: CollectionRepository by lazy {

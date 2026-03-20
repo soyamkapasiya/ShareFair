@@ -65,6 +65,7 @@ dependencies {
 
     // Animations
     implementation(libs.lottie.compose)
+    implementation(libs.room3.external.antlr)
 
     // Compose Dependencies
     val composeBom = platform("androidx.compose:compose-bom:2024.02.01")
