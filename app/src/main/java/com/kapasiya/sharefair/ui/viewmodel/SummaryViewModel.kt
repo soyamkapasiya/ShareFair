@@ -38,47 +38,44 @@ class SummaryViewModel : ViewModel() {
         if (currentUserId.isEmpty()) return
 
         viewModelScope.launch {
-            groupRepository.getGroupsForUserFlow(currentUserId).collect { groups ->
-                val allBillsFlows = groups.map { billRepository.getBillsForGroupFlow(it.id) }
-                
-                if (allBillsFlows.isEmpty()) {
-                    _uiState.value = SummaryUiState.Success(emptyList(), emptyList(), 0.0)
-                    return@collect
+            val personalBillsFlow = billRepository.getSoloBillsFlow(currentUserId)
+            val groupsFlow = groupRepository.getGroupsForUserFlow(currentUserId)
+            
+            groupsFlow.flatMapLatest { groups ->
+                if (groups.isEmpty()) {
+                    personalBillsFlow.map { it }
+                } else {
+                    combine(groups.map { billRepository.getBillsForGroupFlow(it.id) }) { lists ->
+                        lists.flatMap { it }
+                    }.combine(personalBillsFlow) { groupBills, soloBills ->
+                        groupBills + soloBills
+                    }
                 }
-
-                combine(allBillsFlows) { lists ->
-                    lists.flatMap { it }
-                }.collect { allBills ->
-                    processBills(allBills)
-                }
+            }.collect { allBills ->
+                processBills(allBills)
             }
         }
     }
 
     private fun processBills(bills: List<Bill>) {
-        // Only consider bills where current user is a participant or payer
         val relevantBills = bills.filter { bill ->
             bill.payerId == currentUserId || bill.participantsMap.containsKey(currentUserId)
         }
 
-        // Calculate what I actually "OWE" or "SPENT"
-        // For simplicity, let's treat "Spent" as my share in each bill plus what I paid as a gift?
-        // No, let's just use my share in each bill as my spending.
-        
-        val mySpends = relevantBills.map { it.participantsMap[currentUserId] ?: 0.0 }
-        val totalSpent = mySpends.sum()
+        val totalSpent = relevantBills.sumOf { it.amount }
 
-        // Mock categories for now as Bill model doesn't have categories yet
-        // In a real app, bill would have a category field.
-        val categories = listOf("Food", "Rent", "Travel", "Shopping", "Others")
-        val categoryData = categories.mapIndexed { index, cat ->
-            // Randomly distribute for demo
-            CategorySpend(cat, totalSpent * (0.1 + (0.2 * (index % 3))), index)
-        }
+        // Category breakdown
+        val categoryData = relevantBills.groupBy { it.category }.map { entry ->
+            CategorySpend(entry.key, entry.value.sumOf { it.amount }, 0)
+        }.sortedByDescending { it.amount }
 
-        // Mock monthly data
-        val months = listOf("Jan", "Feb", "Mar", "Apr", "May", "Jun")
-        val monthlyData = months.map { MonthlySpend(it, totalSpent / 6 * (0.8 + Math.random() * 0.4)) }
+        // Monthly data (last 6 months)
+        val dateFormat = java.text.SimpleDateFormat("MMM", java.util.Locale.getDefault())
+        val monthlyData = relevantBills.groupBy { 
+            dateFormat.format(java.util.Date(it.timestamp)) 
+        }.map { entry ->
+            MonthlySpend(entry.key, entry.value.sumOf { it.amount })
+        }.takeLast(6)
 
         _uiState.value = SummaryUiState.Success(categoryData, monthlyData, totalSpent)
     }

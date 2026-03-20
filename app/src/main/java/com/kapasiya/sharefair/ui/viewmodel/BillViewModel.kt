@@ -35,20 +35,21 @@ class BillViewModel : ViewModel() {
         if (currentUserId.isEmpty()) return
 
         viewModelScope.launch {
-            groupRepository.getGroupsForUserFlow(currentUserId).collect { groups ->
-                val billFlows = groups.map { group ->
-                    billRepository.getBillsForGroupFlow(group.id)
-                }
-
-                if (billFlows.isEmpty()) {
-                    _allBills.value = emptyList()
-                } else {
-                    combine(billFlows) { lists ->
-                        lists.flatMap { it }.sortedByDescending { it.timestamp }
-                    }.collect { mergedBills ->
-                        _allBills.value = mergedBills
+            val groupBillsFlow = groupRepository.getGroupsForUserFlow(currentUserId).flatMapLatest { groups ->
+                if (groups.isEmpty()) flowOf(emptyList<Bill>())
+                else {
+                    combine(groups.map { billRepository.getBillsForGroupFlow(it.id) }) { lists ->
+                        lists.flatMap { it }
                     }
                 }
+            }
+            
+            val soloBillsFlow = billRepository.getSoloBillsFlow(currentUserId)
+            
+            combine(groupBillsFlow, soloBillsFlow) { groupBills, soloBills ->
+                (groupBills + soloBills).sortedByDescending { it.timestamp }
+            }.collect { merged ->
+                _allBills.value = merged
             }
         }
     }
@@ -76,7 +77,11 @@ class BillViewModel : ViewModel() {
                     items = items,
                     timestamp = System.currentTimeMillis()
                 )
-                billRepository.addBill(groupId, bill)
+                if (groupId == "solo") {
+                    billRepository.addSoloBill(currentUserId, bill)
+                } else {
+                    billRepository.addBill(groupId, bill)
+                }
                 _uiState.value = BillUiState.Success
                 onSuccess()
             } catch (e: Exception) {

@@ -31,6 +31,8 @@ fun GroupsScreen(
     onGroupClick: (Group) -> Unit,
     viewModel: GroupsViewModel = viewModel()
 ) {
+    val collections by viewModel.collections.collectAsState()
+    val activeGroups by viewModel.activeGroups.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
 
     Surface(
@@ -106,32 +108,46 @@ fun GroupsScreen(
                 horizontalArrangement = Arrangement.spacedBy(16.dp),
                 contentPadding = PaddingValues(end = 16.dp)
             ) {
-                items(3) { index ->
-                    val color = if (index == 0) Color(0xFF5C6BC0) else if (index == 1) Color(0xFF66BB6A) else Color(0xFFFF7043)
-                    val title = if (index == 0) "Goa Trip 🏖️" else if (index == 1) "Flat Rent 🏠" else "Office Party 🍕"
+                items(collections) { group ->
+                    val color = when(group.category) {
+                        "TRIP" -> Color(0xFF5C6BC0)
+                        "RENT" -> Color(0xFF66BB6A)
+                        "PARTY" -> Color(0xFFFF7043)
+                        else -> MaterialTheme.colorScheme.primary
+                    }
+                    val icon = when(group.category) {
+                        "TRIP" -> Icons.Default.CardTravel
+                        "RENT" -> Icons.Default.Home
+                        "PARTY" -> Icons.Default.Restaurant
+                        else -> Icons.Default.Group
+                    }
                     
                     Surface(
-                        modifier = Modifier.width(180.dp).height(130.dp),
+                        modifier = Modifier
+                            .width(200.dp)
+                            .height(140.dp)
+                            .clickable { onGroupClick(group) },
                         shape = RoundedCornerShape(32.dp),
                         color = color.copy(alpha = 0.12f),
                         border = androidx.compose.foundation.BorderStroke(2.dp, color.copy(alpha = 0.2f))
                     ) {
                         Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.Center) {
                             Surface(
-                                modifier = Modifier.size(36.dp), 
-                                shape = RoundedCornerShape(12.dp), 
+                                modifier = Modifier.size(40.dp), 
+                                shape = RoundedCornerShape(14.dp), 
                                 color = color.copy(alpha = 0.15f)
                             ) {
                                 Icon(
-                                    if (index == 0) Icons.Default.CardTravel else if (index == 1) Icons.Default.Home else Icons.Default.Restaurant, 
+                                    icon, 
                                     contentDescription = null, 
                                     tint = color, 
-                                    modifier = Modifier.padding(8.dp)
+                                    modifier = Modifier.padding(10.dp)
                                 )
                             }
                             Spacer(modifier = Modifier.height(14.dp))
-                            Text(title, fontWeight = FontWeight.Black, fontSize = 15.sp, color = color)
-                            Text("₹${(index + 1) * 5200}", fontSize = 13.sp, color = color.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)
+                            Text(group.name, fontWeight = FontWeight.Black, fontSize = 16.sp, color = color, maxLines = 1)
+                            val totalSpent = group.groupBalance.values.filter { it > 0 }.sum()
+                            Text("₹${totalSpent.toInt()}", fontSize = 14.sp, color = color.copy(alpha = 0.8f), fontWeight = FontWeight.Bold)
                         }
                     }
                 }
@@ -175,15 +191,15 @@ fun GroupsScreen(
                         )
                     }
                     is GroupsUiState.Success -> {
-                        if (state.groups.isEmpty()) {
+                        if (activeGroups.isEmpty()) {
                             EmptyGroupsView()
                         } else {
                             LazyColumn(
-                                modifier = Modifier.fillMaxSize(),
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
+                                verticalArrangement = Arrangement.spacedBy(16.dp),
+                                contentPadding = PaddingValues(bottom = 100.dp)
                             ) {
-                                items(state.groups) { group ->
-                                    GroupItem(group, onGroupClick)
+                                items(activeGroups) { group ->
+                                    GroupItem(group, onGroupClick = { onGroupClick(group) })
                                 }
                             }
                         }

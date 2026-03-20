@@ -31,7 +31,6 @@ class DashboardViewModel : ViewModel() {
 
     init {
         observeUserData()
-        loadHistory()
     }
 
     private fun observeUserData() {
@@ -48,31 +47,51 @@ class DashboardViewModel : ViewModel() {
                         youOwe = if (u.totalBalance < 0) -u.totalBalance else 0.0
                     ) }
                     
-                    // Also fetch friends and recent transactions
+                    // Fetch friends
                     if (u.friends.isNotEmpty()) {
                         userRepository.getFriends(u.friends).collect { friendsList ->
                             _stats.update { it.copy(friends = friendsList) }
                         }
                     }
                     
-                    if (u.groups.isNotEmpty()) {
-                        combine(u.groups.map { billRepository.getBillsForGroupFlow(it) }) { billsLists ->
-                            billsLists.flatMap { it }.sortedByDescending { it.timestamp }.take(5)
-                        }.collect { recentBills ->
-                            _stats.update { it.copy(recentTransactions = recentBills) }
+                    // Fetch real transactions (Group + Solo)
+                    val groupBillsFlows = u.groups.map { billRepository.getBillsForGroupFlow(it) }
+                    val soloBillsFlow = billRepository.getSoloBillsFlow(currentUserId)
+                    
+                    if (groupBillsFlows.isEmpty()) {
+                        soloBillsFlow.collect { soloBills ->
+                            updateStatsFromBills(soloBills)
                         }
+                    } else {
+                        combine(groupBillsFlows) { lists -> lists.flatMap { it } }
+                            .combine(soloBillsFlow) { groupBills, soloBills -> groupBills + soloBills }
+                            .collect { allBills ->
+                                updateStatsFromBills(allBills)
+                            }
                     }
                 }
             }
         }
     }
 
-    private fun loadHistory() {
-        // Placeholder stats - in a real app, logic would go here
-        val history = listOf(
-            "Mon" to 120.0, "Tue" to 450.0, "Wed" to 200.0, 
-            "Thu" to 800.0, "Fri" to 300.0, "Sat" to 600.0, "Sun" to 150.0
-        )
-        _stats.update { it.copy(spendingHistory = history) }
+    private fun updateStatsFromBills(allBills: List<Bill>) {
+        val sorted = allBills.sortedByDescending { it.timestamp }
+        val recent = sorted.take(5)
+        
+        // Calculate history for last 7 days
+        val calendar = java.util.Calendar.getInstance()
+        val history = mutableListOf<Pair<String, Double>>()
+        val dayNames = listOf("Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat")
+        
+        for (i in 6 downTo 0) {
+            val dayCalendar = java.util.Calendar.getInstance().apply { add(java.util.Calendar.DAY_OF_YEAR, -i) }
+            val dayStart = dayCalendar.apply { set(java.util.Calendar.HOUR_OF_DAY, 0); set(java.util.Calendar.MINUTE, 0); set(java.util.Calendar.SECOND, 0) }.timeInMillis
+            val dayEnd = dayCalendar.apply { set(java.util.Calendar.HOUR_OF_DAY, 23); set(java.util.Calendar.MINUTE, 59); set(java.util.Calendar.SECOND, 59) }.timeInMillis
+            
+            val dailySum = allBills.filter { it.timestamp in dayStart..dayEnd }.sumOf { it.amount }
+            history.add(dayNames[dayCalendar.get(java.util.Calendar.DAY_OF_WEEK) - 1] to dailySum)
+        }
+        
+        _stats.update { it.copy(recentTransactions = recent, spendingHistory = history) }
     }
 }

@@ -17,6 +17,12 @@ class GroupsViewModel : ViewModel() {
     private val _uiState = MutableStateFlow<GroupsUiState>(GroupsUiState.Loading)
     val uiState: StateFlow<GroupsUiState> = _uiState.asStateFlow()
 
+    private val _collections = MutableStateFlow<List<Group>>(emptyList())
+    val collections: StateFlow<List<Group>> = _collections.asStateFlow()
+
+    private val _activeGroups = MutableStateFlow<List<Group>>(emptyList())
+    val activeGroups: StateFlow<List<Group>> = _activeGroups.asStateFlow()
+
     private val _currentUser = MutableStateFlow<com.kapasiya.sharefair.model.User?>(null)
     val currentUser: StateFlow<com.kapasiya.sharefair.model.User?> = _currentUser.asStateFlow()
 
@@ -48,6 +54,10 @@ class GroupsViewModel : ViewModel() {
                 }
                 .collect { groups ->
                     _uiState.value = GroupsUiState.Success(groups)
+                    
+                    // Filter groups into collections and standard groups
+                    _collections.value = groups.filter { it.category != "OTHERS" }
+                    _activeGroups.value = groups.filter { it.category == "OTHERS" }
                 }
         }
     }
@@ -56,6 +66,7 @@ class GroupsViewModel : ViewModel() {
         name: String, 
         members: List<String>, 
         type: String = "GROUP",
+        category: String = "OTHERS",
         simplifyBalances: Boolean = true,
         onResult: (Boolean, String) -> Unit
     ) {
@@ -80,6 +91,7 @@ class GroupsViewModel : ViewModel() {
                     name = name,
                     members = allMembers,
                     type = type,
+                    category = category,
                     simplifyBalances = simplifyBalances,
                     recentActivity = listOf("Group created by ${user.name}")
                 )
